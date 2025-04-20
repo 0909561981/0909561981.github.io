@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>升級畫面</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    #Back_Bottom {
+      background-color: #444;
+      color: white;
+      padding: 5px 10px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #points {
+      font-size: 18px;
+    }
+
+    .upgrade-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .bar {
+      display: flex;
+      gap: 2px;
+      width: 210px;
+      height: 20px;
+      background: gray;
+      margin: 0 15px;
+      padding: 2px;
+      box-sizing: border-box;
+    }
+
+    .segment {
+      flex: 1;
+      background: yellow;
+      height: 100%;
+    }
+
+    .empty-segment {
+      flex: 1;
+      background: #444;
+      height: 100%;
+    }
+
+    button {
+      font-size: 18px;
+      padding: 2px 8px;
+      cursor: pointer;
+    }
+
+    .stat-name {
+      width: 140px;
+      text-align: right;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="top-bar">
+    <button id="Back_Bottom" onclick="location.href='home.html'">← 返回</button>
+    <div id="points">剩餘升級點數：<span id="point-count">10</span></div>
+  </div>
+
+  <div id="upgrades"></div>
+
+  <!-- 音效 -->
+  <audio id="levelup-sound" src="Upgrade.mp3" preload="auto"></audio>
+
+  <script>
+    const upgradeStats = [
+      "Max Health", "Movement Speed", "Bullet Damage", 
+      "Body Damage", "Bullet Speed", "Health Regen", "Bullet Speed"
+    ];
+
+    const upgradesDiv = document.getElementById('upgrades');
+    const maxLevel = 7;
+    let upgradePoints = 10;
+
+    const levels = {};
+    upgradeStats.forEach(stat => levels[stat] = 1);
+
+    //升級音效
+    function playLevelUpSound() {
+        const sound = new Audio('Upgrade.mp3');
+        sound.play();
+    }
+
+    // 升級頁面
+    function renderUpgrades() {
+      document.getElementById('point-count').textContent = upgradePoints;
+      upgradesDiv.innerHTML = '';
+
+      upgradeStats.forEach(stat => {
+        const container = document.createElement('div');
+        container.className = 'upgrade-item';
+
+        const name = document.createElement('div');
+        name.className = 'stat-name';
+        name.textContent = stat;
+
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+
+        for (let i = 0; i < maxLevel; i++) {
+          const segment = document.createElement('div');
+          if (i < levels[stat]) {
+            segment.className = 'segment';
+          } else {
+            segment.className = 'empty-segment';
+          }
+          bar.appendChild(segment);
+        }
+
+        const btn = document.createElement('button');
+        btn.textContent = '+';
+        btn.onclick = () => {
+          if (levels[stat] >= maxLevel) {
+            alert(`${stat} 已經滿等囉！`);
+            return;
+          }
+          if (upgradePoints <= 0) {
+            alert('升級點數不足！');
+            return;
+          }
+          levels[stat]++;
+          upgradePoints--;
+          playLevelUpSound();
+          renderUpgrades();
+        };
+
+        container.appendChild(name);
+        container.appendChild(bar);
+        container.appendChild(btn);
+
+        upgradesDiv.appendChild(container);
+      });
+    }
+
+    renderUpgrades();
+  </script>
+</body>
+</html>

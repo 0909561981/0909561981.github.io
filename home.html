@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - Endless Shooter</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    .Player_Information {
+      position: absolute;
+      top: 30px;
+      left: 25px;
+      display: flex;
+      align-items: center;
+      font-size: 2.5em;
+    }
+    .Player_Information span {
+      margin-left: 10px;
+    }
+    .Upgrade_Bottom, .Play_Bottom {
+      position: absolute;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      background-color: #333;
+      color: white;
+      cursor: pointer;
+    }
+    .Upgrade_Bottom:hover, .Play_Bottom:hover {
+      background-color: #555;
+    }
+    .Upgrade_Bottom {
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .Play_Bottom {
+      bottom: 80px;
+      left: 75%;
+      transform: translateX(-50%);
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgm" src="bgm.mp3" autoplay loop></audio>
+  <script>
+    bgm.play();    //Problem 
+  </script>
+
+  <div class="Player_Information">
+    <div>😀</div>
+    <span id="PlayerName">屎蛋</span> - Lv1
+  </div>
+
+  <button class="Upgrade_Bottom" onclick="location.href='Upgrade.html'">升級</button>
+  <button class="Play_Bottom" onclick="location.href='Game.html'">PLAY</button>
+</body>
+</html>

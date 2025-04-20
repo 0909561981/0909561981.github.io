@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Endless Shooter - Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      color: white;
+      font-family: sans-serif;
+    }
+    #home-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      color: black;
+      border: none;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      z-index: 10;
+    }
+    #gameover-screen {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      font-size: 48px;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 10;
+    }
+    #gameover-screen button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <button id="home-btn" onclick="location.href='home.html'">返回主畫面</button>
+  <div id="gameover-screen">
+    Game Over
+    <button onclick="location.href='home.html'">回主畫面</button>
+  </div>
+  <script src="p5.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>註冊 - Endless Shooter</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    input {
+      margin: 10px;
+      padding: 10px;
+      width: 200px;
+      font-size: 1em;
+    }
+    .Bottom {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .Bottom:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>註冊</h1>
+  <input id="account" type="text" placeholder="帳號 (5~10字)" minlength="5" maxlength="10" required />
+  <input id="password" type="password" placeholder="密碼 (5~10字)" minlength="5" maxlength="10" required />
+  <button class="Bottom" onclick="validateAndRegister()">註冊</button>
+
+  <script>
+    function validateAndRegister() {
+      const account = document.getElementById('account').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (account.length < 5 || account.length > 10 || password.length < 5 || password.length > 10) {
+        //alert('帳號或是密碼長度不合，請輸入5到10個字之間');
+        alert('條件都看不懂，呆子？');
+        return;
+      }
+      location.href = 'home.html';
+    }
+  </script>
+</body>
+</html>
