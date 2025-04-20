@@ -13,17 +13,55 @@
   <button class="Bottom" onclick="validateAndRegister()">註冊</button>
 
   <script>
-    function validateAndRegister() {
+    async function hashPassword(password) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      return hashHex;
+    }
+  
+    async function validateAndRegister() {
       const account = document.getElementById('account').value.trim();
       const password = document.getElementById('password').value.trim();
-
+  
       if (account.length < 5 || account.length > 10 || password.length < 5 || password.length > 10) {
-        //alert('帳號或是密碼長度不合，請輸入5到10個字之間');
         alert('條件都看不懂，呆子？');
         return;
       }
-      location.href = 'home.html';
+  
+      try {
+        const hashedPassword = await hashPassword(password); // ⬅️ SHA-256 hash
+  
+        const ngrokUrl = await getNgrokUrl();
+  
+        const res = await fetch(`${ngrokUrl}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ account, password: hashedPassword })
+        });
+  
+        const data = await res.json();
+  
+        if (data.success) {
+          alert('註冊成功！');
+          location.href = 'home.html';
+        } else {
+          alert('註冊失敗：' + data.message);
+        }
+      } catch (err) {
+        alert('連線錯誤：' + err);
+      }
+    }
+  
+    async function getNgrokUrl() {
+      const gistRawUrl = 'https://gist.githubusercontent.com/xmu310/bcd3d6d17926e0d772faf1fbe1faf505/raw/ngrok-url.txt';
+      const res = await fetch(gistRawUrl);
+      const text = await res.text();
+      return text.trim();
     }
   </script>
+  
 </body>
 </html>
