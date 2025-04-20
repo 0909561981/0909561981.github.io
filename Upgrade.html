@@ -3,76 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>升級畫面</title>
-  <style>
-    body {
-      background: black;
-      color: white;
-      font-family: sans-serif;
-      padding: 20px;
-      margin: 0;
-    }
-
-    #top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    #Back_Bottom {
-      background-color: #444;
-      color: white;
-      padding: 5px 10px;
-      font-size: 16px;
-      border: none;
-      cursor: pointer;
-    }
-
-    #points {
-      font-size: 18px;
-    }
-
-    .upgrade-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .bar {
-      display: flex;
-      gap: 2px;
-      width: 210px;
-      height: 20px;
-      background: gray;
-      margin: 0 15px;
-      padding: 2px;
-      box-sizing: border-box;
-    }
-
-    .segment {
-      flex: 1;
-      background: yellow;
-      height: 100%;
-    }
-
-    .empty-segment {
-      flex: 1;
-      background: #444;
-      height: 100%;
-    }
-
-    button {
-      font-size: 18px;
-      padding: 2px 8px;
-      cursor: pointer;
-    }
-
-    .stat-name {
-      width: 140px;
-      text-align: right;
-      margin-right: 10px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -89,7 +20,7 @@
   <script>
     const upgradeStats = [
       "Max Health", "Movement Speed", "Bullet Damage", 
-      "Body Damage", "Bullet Speed", "Health Regen", "Bullet Speed"
+      "Body Damage", "Bullet Frequency", "Health Regen", "Bullet Speed"
     ];
 
     const upgradesDiv = document.getElementById('upgrades');

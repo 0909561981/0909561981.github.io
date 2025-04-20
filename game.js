@@ -279,24 +279,47 @@ class Joystick {
     this.base = createVector(x, y);
     this.knob = this.base.copy();
     this.radius = 40;
-    this.dragging = false;
     this.active = false;
   }
 
   update() {
-    if (mouseIsPressed && dist(mouseX, mouseY, this.base.x, this.base.y) < this.radius * 2) {
-      this.dragging = true;
+    this.active = false;
+    this.knob = this.base.copy();
+
+    let controllingPoint = null;
+
+    if (touches.length > 0) {
+      // 多指觸控處理
+      let closestTouch = null;
+      let minDist = Infinity;
+
+      for (let t of touches) {
+        let d = dist(t.x, t.y, this.base.x, this.base.y);
+        if (d < this.radius * 2.5 && d < minDist) {
+          minDist = d;
+          closestTouch = t;
+        }
+      }
+
+      if (closestTouch) {
+        controllingPoint = createVector(closestTouch.x, closestTouch.y);
+      }
+    } else if (mouseIsPressed) {
+      // 滑鼠控制（只有單點）
+      let d = dist(mouseX, mouseY, this.base.x, this.base.y);
+      if (d < this.radius * 2.5) {
+        controllingPoint = createVector(mouseX, mouseY);
+      }
+    }
+
+    if (controllingPoint) {
+      this.knob = controllingPoint;
       this.active = true;
-      this.knob = createVector(mouseX, mouseY);
-    } else if (!mouseIsPressed) {
-      this.dragging = false;
-      this.knob = this.base.copy();
-      this.active = false;
     }
   }
 
   getDirection() {
-    return p5.Vector.sub(this.knob, this.base).normalize();
+    return p5.Vector.sub(this.knob, this.base).limit(1);
   }
 
   display() {
@@ -306,6 +329,10 @@ class Joystick {
     fill(200);
     ellipse(this.knob.x, this.knob.y, this.radius);
   }
+}
+
+function touchMoved() {
+  return false; // 防止手機觸控時畫面上下滑動
 }
 
 function spawnBoss() {
