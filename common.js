@@ -4,6 +4,7 @@
 window.getNgrokUrl = async function () {
     const res = await fetch('https://gist.githubusercontent.com/xmu310/bcd3d6d17926e0d772faf1fbe1faf505/raw');
     return (await res.text()).trim();
+    //return 'http://localhost:5000';
 };
 
 // 定義 AuthManager 類別並掛載到 window 上
