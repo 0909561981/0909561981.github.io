@@ -1,3 +1,4 @@
+// === 你的程式碼開頭不變 ===
 let player;
 let bullets = [];
 let enemies = [];
@@ -9,9 +10,11 @@ let gameTime = 30;
 let timer;
 let playerHitCount = 0;
 
-// 虛擬搖桿
 let moveJoystick, shootJoystick;
 let moveVector, shootVector;
+
+const wells = [];
+const obstacles = []; // 包含井位、牆壁、尖刺牆
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -24,9 +27,21 @@ function setup() {
   moveVector = createVector(0, 0);
   shootVector = createVector(0, 0);
 
+  // 固定五個井位
+  wells.push(createVector(100, 100));
+  wells.push(createVector(width - 100, 100));
+  wells.push(createVector(100, height - 200));
+  wells.push(createVector(width - 100, height - 200));
+  wells.push(createVector(width / 2, height / 4));
+
+  wells.forEach(w => obstacles.push({ pos: w, type: "well" }));
+  obstacles.push({ pos: createVector(width / 2 - 150, height / 2), type: "wall" });
+  obstacles.push({ pos: createVector(width / 2 + 150, height / 2), type: "spike" });
+
   timer = setInterval(() => {
     if (gameTime > 0) {
       gameTime--;
+      spawnEnemyFromWell();
     } else if (!bossActive) {
       spawnBoss();
     }
@@ -43,7 +58,7 @@ function draw() {
   if (gameOver) {
     textSize(48);
     text("Game Over", width / 2, height / 2);
-    let btn = createButton("回主畫面");
+    let btn = createButton("\u56de\u4e3b\u756b\u9762");
     btn.position(width / 2 - 50, height / 2 + 50);
     btn.mousePressed(() => window.location.href = "home.html");
     noLoop();
@@ -59,9 +74,26 @@ function draw() {
   player.update(moveVector);
   player.display();
 
+  // 顯示障礙物與井位
+  obstacles.forEach(ob => {
+    push();
+    if (ob.type === "well") fill(100, 100, 255);
+    else if (ob.type === "wall") fill(255, 204, 0); // 黃色
+    else if (ob.type === "spike") fill(255, 0, 0);  // 紅色
+    rectMode(CENTER);
+    rect(ob.pos.x, ob.pos.y, 40, 40);
+    pop();
+  });
+
   enemyBullets.forEach((eb, i) => {
     eb.update();
     eb.display();
+  
+    if (bulletHitsObstacle(eb)) {
+      enemyBullets.splice(i, 1);
+      return;
+    }
+  
     if (eb.hits(player)) {
       playerHitCount++;
       enemyBullets.splice(i, 1);
@@ -70,6 +102,7 @@ function draw() {
       enemyBullets.splice(i, 1);
     }
   });
+  
 
   if (shootVector.mag() > 0) {
     player.shoot(shootVector);
@@ -78,12 +111,24 @@ function draw() {
   bullets.forEach((b, i) => {
     b.update();
     b.display();
-    if (b.offscreen()) bullets.splice(i, 1);
+  
+    // 擋到障礙物就移除
+    if (bulletHitsObstacle(b)) {
+      bullets.splice(i, 1);
+    } else if (b.offscreen()) {
+      bullets.splice(i, 1);
+    }
   });
 
   enemies.forEach((e, i) => {
     e.update();
     e.display();
+
+    if (e.collides(player)) {
+      playerHitCount++;
+      enemies.splice(i, 1);
+      if (playerHitCount >= 3) gameOver = true;
+    }
 
     bullets.forEach((b, j) => {
       if (b.hits(e)) {
@@ -91,12 +136,6 @@ function draw() {
         enemies.splice(i, 1);
       }
     });
-  });
-
-  enemyBullets.forEach((eb, i) => {
-    eb.update();
-    eb.display();
-    if (eb.offscreen()) enemyBullets.splice(i, 1);
   });
 
   if (boss) {
@@ -132,15 +171,21 @@ function draw() {
   shootJoystick.display();
 }
 
-function keyPressed() {
-  if (key === ' ') {
-    let x = random(50, width - 50);
-    let y = random(50, height - 50);
-    enemies.push(new Enemy(x, y));
-  }
+function bulletHitsObstacle(bullet) {
+  return obstacles.some(ob => dist(bullet.pos.x, bullet.pos.y, ob.pos.x, ob.pos.y) < 25);
 }
 
-// === Classes ===
+function spawnEnemyFromWell() {
+  let well = random(wells);
+  let offset = random([
+    createVector(-30, 0),
+    createVector(30, 0),
+    createVector(0, -30),
+    createVector(0, 30)
+  ]);
+  let spawnPos = p5.Vector.add(well, offset);
+  enemies.push(new Enemy(spawnPos.x, spawnPos.y));
+}
 
 class Player {
   constructor(x, y) {
@@ -149,14 +194,12 @@ class Player {
   }
 
   update(vec) {
-    if (vec.mag() > 0.1) { // 增加門檻
-      this.pos.add(vec.copy().mult(5));
+    let next = this.pos.copy().add(vec.copy().mult(5));
+    if (!collidesWithObstacle(next, true)) {
+      this.pos = next;
     }
-    this.pos.x = constrain(this.pos.x, 0, width);
-    this.pos.y = constrain(this.pos.y, 0, height);
     if (this.cooldown > 0) this.cooldown--;
   }
-  
 
   display() {
     textSize(32);
@@ -170,6 +213,64 @@ class Player {
     }
   }
 }
+
+class Enemy {
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.cooldown = int(random(30, 90));
+    this.moveDir = p5.Vector.random2D().mult(2);
+    this.changeDirCounter = 0;
+  }
+
+  update() {
+    let next = this.pos.copy().add(this.moveDir);
+    if (!collidesWithObstacle(next)) this.pos = next;
+
+    this.changeDirCounter++;
+    if (this.changeDirCounter > 30) {
+      this.moveDir = p5.Vector.random2D().mult(2);
+      this.changeDirCounter = 0;
+    }
+
+    this.cooldown--;
+    if (this.cooldown <= 0) {
+      let dir = p5.Vector.sub(player.pos, this.pos).normalize();
+      enemyBullets.push(new Bullet(this.pos.x, this.pos.y, dir.mult(4), "enemy"));
+      this.cooldown = int(random(60, 100));
+    }
+  }
+
+  display() {
+    textSize(32);
+    text("😢", this.pos.x, this.pos.y);
+  }
+
+  collides(p) {
+    return dist(this.pos.x, this.pos.y, p.pos.x, p.pos.y) < 30;
+  }
+}
+
+let spikeDamageCooldown = new Set(); // 記錄刺牆碰撞過
+
+function collidesWithObstacle(pos, checkSpike = true) {
+  for (let ob of obstacles) {
+    if (dist(pos.x, pos.y, ob.pos.x, ob.pos.y) < 30) {
+      if (ob.type === "spike" && checkSpike) {
+        let id = `${ob.pos.x},${ob.pos.y}`;
+        if (!spikeDamageCooldown.has(id)) {
+          spikeDamageCooldown.add(id);
+          playerHitCount++;
+          if (playerHitCount >= 3) gameOver = true;
+          // 過 1 秒重設
+          setTimeout(() => spikeDamageCooldown.delete(id), 1000);
+        }
+      }
+      return true; // 都會擋住路
+    }
+  }
+  return false;
+}
+
 
 class Bullet {
   constructor(x, y, vel, type) {
@@ -195,40 +296,6 @@ class Bullet {
     return dist(this.pos.x, this.pos.y, target.pos.x, target.pos.y) < 25;
   }
 }
-
-class Enemy {
-  constructor(x, y) {
-    this.pos = createVector(x, y);
-    this.cooldown = int(random(30, 90));
-    this.moveDir = p5.Vector.random2D().mult(2);
-    this.changeDirCounter = 0;
-  }
-
-  update() {
-    this.pos.add(this.moveDir);
-    this.pos.x = constrain(this.pos.x, 0, width);
-    this.pos.y = constrain(this.pos.y, 0, height);
-
-    this.changeDirCounter++;
-    if (this.changeDirCounter > 30) {
-      this.moveDir = p5.Vector.random2D().mult(2);
-      this.changeDirCounter = 0;
-    }
-
-    this.cooldown--;
-    if (this.cooldown <= 0) {
-      let dir = p5.Vector.sub(player.pos, this.pos).normalize();
-      enemyBullets.push(new Bullet(this.pos.x, this.pos.y, dir.mult(4), "enemy"));
-      this.cooldown = int(random(60, 100));
-    }
-  }
-
-  display() {
-    textSize(32);
-    text("😢", this.pos.x, this.pos.y);
-  }
-}
-
 
 class Boss {
   constructor(x, y) {
