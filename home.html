@@ -5,34 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home - Endless Shooter</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    /* 加在這邊或 style.css 都可以 */
-    .Leaderboard {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 10px;
-      border-radius: 12px;
-      font-size: 14px;
-      max-width: 200px;
-    }
-
-    .Leaderboard h3 {
-      margin: 0 0 8px 0;
-      font-size: 16px;
-    }
-
-    .Leaderboard ol {
-      padding-left: 20px;
-      margin: 0;
-    }
-
-    .Leaderboard li {
-      margin-bottom: 4px;
-    }
-  </style>
 </head>
 <body>
   <audio id="bgm" src="bgm.mp3" autoplay loop></audio>
@@ -49,19 +21,11 @@
     <span id="PlayerName">屎蛋</span> - Lv1
   </div>
 
-  <button class="Upgrade_Bottom" onclick="location.href='Upgrade.html'">升級</button>
+  <!-- <button class="Upgrade_Bottom" onclick="location.href='Upgrade.html'">升級</button> -->
   <button class="Play_Bottom" onclick="location.href='Game.html'">PLAY</button>
+  <button class="History_Bottom" onclick="location.href='History.html'">我的紀錄</button>
+  <button class="RankingList_Bottom" onclick="location.href='RankingList.html'">排行榜</button>
 
-  <!-- ✅ 新增排行榜 -->
-  <div class="Leaderboard">
-    <h3>🏆 排行榜</h3>
-    <ol>
-      <li>🥇 GG蛋 - Lv10</li>
-      <li>🥈 CC仔 - Lv8</li>
-      <li>🥉 DD神 - Lv6</li>
-    </ol>
-    <div style="text-align:center;">...</div>
-    <div class="self-rank">⭐ 屎蛋 - Lv1</div>
-  </div>  
+ 
 </body>
 </html>

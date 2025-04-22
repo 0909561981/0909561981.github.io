@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>排行榜 - Endless Shooter</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      background-color: #111;
+      color: white;
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .history-container {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    .history-container ol {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    .history-container li {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .back-button {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .back-button:hover {
+      background-color: #666;
+    }
+  </style>
+</head>
+<body>
+  <!-- ✅ 新增排行榜 -->
+  <div class="rank">
+    <h3>🏆 排行榜</h3>
+    <div class="rank-list">
+      <p>🥇1. GG蛋 - Lv10</p>
+      <p>🥈2. CC仔 - Lv8</p>
+      <p>🥉3. DD神 - Lv6</p>
+    </div>
+    <div class="self-rank">⭐ 屎蛋 - Lv1</div>
+  </div>  
+
+  <button class="back-button" onclick="location.href='home.html'">← 返回</button>
+</body>
+</html>
