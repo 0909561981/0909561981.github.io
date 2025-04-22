@@ -7,15 +7,18 @@ let boss = null;
 let bossActive = false;
 let gameOver = false;
 let playerHitCount = 0;
+let gamePaused = false;
 
 let moveJoystick, shootJoystick;
 let moveVector, shootVector;
 
 const wells = [];
-const obstacles = []; // 包含井位、牆壁、尖刺牆
+const obstacles = []; // 包含井位、牆壁、尖刺牆與邊界牆
 
 const wellEmojis = ["😠", "😡", "🤬", "😈", "👿"];
 const bossEmojis = ["🚓", "🚑", "🚒", "🚜", "🚁"];
+
+let pauseButton, pauseMenu;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -28,6 +31,13 @@ function setup() {
   moveVector = createVector(0, 0);
   shootVector = createVector(0, 0);
 
+  // 暫停按鈕
+  pauseButton = createButton("⏸");
+  pauseButton.position(width / 2 - 20, 10);
+  pauseButton.mousePressed(togglePause);
+  pauseButton.style("font-size", "24px");
+
+  // 加入井
   wells.push({ pos: createVector(100, 100), level: 1 });
   wells.push({ pos: createVector(width - 100, 100), level: 2 });
   wells.push({ pos: createVector(100, height - 200), level: 3 });
@@ -40,20 +50,122 @@ function setup() {
     queue.push("boss");
     shuffle(queue, true);
     w.spawnQueue = queue;
-    w.emoji = wellEmojis[i]; // 固定對應的表情符號
+    w.emoji = wellEmojis[i];
     obstacles.push({ pos: w.pos, type: "well", level: w.level });
   });
 
-  obstacles.push({ pos: createVector(width / 2 - 150, height / 2), type: "wall" });
+  // 中間障礙物
+  obstacles.push({ pos: createVector(width / 2 - 150, height / 2), type: "spike" });
   obstacles.push({ pos: createVector(width / 2 + 150, height / 2), type: "spike" });
 
+  // 邊界障礙物
+  const spacing = 10;
+  for (let x = 0; x < width; x += spacing) {
+    obstacles.push({ pos: createVector(x, 0), type: "wall" });
+    obstacles.push({ pos: createVector(x, height - 1), type: "wall" });
+  }
+  for (let y = spacing; y < height - spacing; y += spacing) {
+    obstacles.push({ pos: createVector(0, y), type: "wall" });
+    obstacles.push({ pos: createVector(width - 1, y), type: "wall" });
+  }
+
   setInterval(() => {
-    let candidates = wells.filter(w => w.spawnQueue.length > 0);
-    if (candidates.length > 0) {
-      let well = random(candidates);
-      spawnNextFromWell(well);
+    if (!gamePaused) {
+      let candidates = wells.filter(w => w.spawnQueue.length > 0);
+      if (candidates.length > 0) {
+        let well = random(candidates);
+        spawnNextFromWell(well);
+      }
     }
-  }, 5000); // 每 5 秒觸發一次
+  }, 5000);
+}
+
+function togglePause() {
+  gamePaused = !gamePaused;
+  if (gamePaused) {
+    pauseButton.hide();
+
+    // Create the pause menu container
+    pauseMenu = createElement('div');
+    pauseMenu.style('background', 'rgba(0,0,0,0.8)');
+    pauseMenu.style('padding', '20px');
+    pauseMenu.style('border-radius', '10px');
+    pauseMenu.style('color', 'white');
+    pauseMenu.style('text-align', 'center');
+    pauseMenu.style('width', '100%');
+    pauseMenu.style('height', '100%');
+    pauseMenu.style('position', 'absolute');
+    pauseMenu.style('top', '0');
+    pauseMenu.style('left', '0');
+    pauseMenu.style('display', 'flex');
+    pauseMenu.style('flex-direction', 'column');
+    pauseMenu.style('justify-content', 'center');
+    pauseMenu.style('align-items', 'center');
+
+    // Title
+    let title = createElement('h2', '遊戲暫停');
+    title.style('margin-bottom', '30px');
+    pauseMenu.child(title);
+
+    // Create the first div for the first two buttons
+    let topButtonDiv = createElement('div');
+    topButtonDiv.style('display', 'flex');
+    topButtonDiv.style('gap', '20px'); // Add some space between buttons
+    topButtonDiv.style('justify-content', 'center'); // Horizontally align buttons
+
+    let resumeButton = createButton('繼續遊戲');
+    resumeButton.mousePressed(resumeGame);
+    resumeButton.style('padding', '15px 30px');
+    resumeButton.style('font-size', '18px');
+    topButtonDiv.child(resumeButton);
+
+    let upgradeButton = createButton('升級能力');
+    upgradeButton.mousePressed(() => location.href = 'Upgrade.html');
+    upgradeButton.style('padding', '15px 30px');
+    upgradeButton.style('font-size', '18px');
+    topButtonDiv.child(upgradeButton);
+
+    pauseMenu.child(topButtonDiv);
+
+    // Create the second div for the remaining three buttons
+    let bottomButtonDiv = createElement('div');
+    bottomButtonDiv.style('display', 'flex');
+    bottomButtonDiv.style('gap', '20px'); // Add some space between buttons
+    bottomButtonDiv.style('justify-content', 'center'); // Horizontally align buttons
+
+    let saveButton = createButton('儲存進度');
+    saveButton.mousePressed(() => alert('儲存進度尚未實作'));
+    saveButton.style('padding', '15px 30px');
+    saveButton.style('font-size', '18px');
+    bottomButtonDiv.child(saveButton);
+
+    let exitButton = createButton('離開遊戲');
+    exitButton.mousePressed(() => location.href = 'home.html');
+    exitButton.style('padding', '15px 30px');
+    exitButton.style('font-size', '18px');
+    bottomButtonDiv.child(exitButton);
+
+    let helpButton = createButton('說明');
+    helpButton.mousePressed(() => location.href = 'about.html');
+    helpButton.style('padding', '15px 30px');
+    helpButton.style('font-size', '18px');
+    bottomButtonDiv.child(helpButton);
+
+    pauseMenu.child(bottomButtonDiv);
+
+    // Append pauseMenu to the body
+    document.body.appendChild(pauseMenu.elt);
+
+  } else {
+    if (pauseMenu) pauseMenu.remove();
+    pauseButton.show();
+  }
+}
+
+function resumeGame() {
+  gamePaused = false;
+  if (pauseMenu) pauseMenu.remove();
+  pauseButton.show();
 }
 
 function draw() {
@@ -69,6 +181,12 @@ function draw() {
     return;
   }
 
+  if (gamePaused) {
+    moveJoystick.display();
+    shootJoystick.display();
+    return;
+  }
+
   moveJoystick.update();
   shootJoystick.update();
 
@@ -81,7 +199,7 @@ function draw() {
   obstacles.forEach(ob => {
     push();
     if (ob.type === "well") fill(100, 100, 255);
-    else if (ob.type === "wall") fill(255, 204, 0);
+    else if (ob.type === "wall") {    noStroke();   fill(255, 204, 0); }
     else if (ob.type === "spike") fill(255, 0, 0);
     rectMode(CENTER);
     rect(ob.pos.x, ob.pos.y, 40, 40);
@@ -104,9 +222,9 @@ function draw() {
     }
 
     if (eb.hits(player)) {
-      playerHitCount++;
+      player.hp--;
       enemyBullets.splice(i, 1);
-      if (playerHitCount >= 3) gameOver = true;
+      if (player.hp <= 0) gameOver = true;
     } else if (eb.offscreen()) {
       enemyBullets.splice(i, 1);
     }
@@ -132,16 +250,19 @@ function draw() {
     e.display();
 
     if (e.collides(player)) {
-      playerHitCount++;
+      player.hp--;
       enemies.splice(i, 1);
-      if (playerHitCount >= 3) gameOver = true;
+      if (player.hp <= 0) gameOver = true;
     }
 
     bullets.forEach((b, j) => {
       if (b.hits(e)) {
         bullets.splice(j, 1);
-        enemies.splice(i, 1);
-      }
+        e.hp--;
+        if (e.hp <= 0) {
+          enemies.splice(i, 1);
+        }
+        }
     });
   });
 
@@ -202,10 +323,22 @@ function bulletHitsObstacle(bullet) {
   return obstacles.some(ob => dist(bullet.pos.x, bullet.pos.y, ob.pos.x, ob.pos.y) < 25);
 }
 
+function drawHealthBar(x, y, hp, maxHp) {
+  let barWidth = 40;
+  let barHeight = 5;
+  let pct = hp / maxHp;
+  stroke(255);
+  fill(100);
+  rect(x - barWidth / 2, y, barWidth, barHeight);
+  fill(255, 0, 0);
+  rect(x - barWidth / 2, y, barWidth * pct, barHeight);
+}
+
 class Player {
   constructor(x, y) {
     this.pos = createVector(x, y);
     this.cooldown = 0;
+    this.hp = 3; // 加入血量
   }
 
   update(vec) {
@@ -219,6 +352,7 @@ class Player {
   display() {
     textSize(32);
     text("😄", this.pos.x, this.pos.y);
+    drawHealthBar(this.pos.x, this.pos.y - 30, this.hp, 3);
   }
 
   shoot(vec) {
@@ -236,6 +370,7 @@ class Enemy {
     this.moveDir = p5.Vector.random2D().mult(2);
     this.changeDirCounter = 0;
     this.emoji = emoji;
+    this.hp = 1; // 加一點血量
   }
 
   update() {
@@ -259,6 +394,7 @@ class Enemy {
   display() {
     textSize(32);
     text(this.emoji, this.pos.x, this.pos.y);
+    drawHealthBar(this.pos.x, this.pos.y - 25, this.hp, 1);
   }
 
   collides(p) {
@@ -275,8 +411,8 @@ function collidesWithObstacle(pos, checkSpike = true) {
         let id = `${ob.pos.x},${ob.pos.y}`;
         if (!spikeDamageCooldown.has(id)) {
           spikeDamageCooldown.add(id);
-          playerHitCount++;
-          if (playerHitCount >= 3) gameOver = true;
+          player.hp--;
+          if (player.hp <= 0) gameOver = true;
           setTimeout(() => spikeDamageCooldown.delete(id), 1000);
         }
       }
@@ -352,6 +488,7 @@ class Boss {
   display() {
     textSize(48);
     text(this.emoji, this.pos.x, this.pos.y);
+    drawHealthBar(this.pos.x, this.pos.y - 40, this.hp, 3);
   }
 }
 
