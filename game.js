@@ -1,64 +1,66 @@
-// === 你的程式碼開頭不變 ===
 let player;
 let bullets = [];
+
 let enemies = [];
 let enemyBullets = [];
-let boss = null;
-let bossActive = false;
+
+let bosses = [];
+let bossBullets = [];
+
 let gameOver = false;
-let playerHitCount = 0;
+
 let gamePaused = false;
 
 let moveJoystick, shootJoystick;
 let moveVector, shootVector;
 
 const wells = [];
-const obstacles = []; // 包含井位、牆壁、尖刺牆與邊界牆
-
-const wellEmojis = ["😠", "😡", "🤬", "😈", "👿"];
+const obstacles = [];
+const wells_level = [1,2,3,4,5];
+const wellEmojis = ["😠", "🤕", "🤬", "😷", "🤮"];
 const bossEmojis = ["🚓", "🚑", "🚒", "🚜", "🚁"];
 
 let pauseButton, pauseMenu;
 
 function setup() {
+  // 建立畫布(讓畫面適配瀏覽器)
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   player = new Player(width / 2, height / 2);
 
+  // 建立滑輪
   moveJoystick = new Joystick(100, height - 100);
   shootJoystick = new Joystick(width - 100, height - 100);
-
   moveVector = createVector(0, 0);
   shootVector = createVector(0, 0);
 
-  // 暫停按鈕
+  // 建立暫停按鈕
   pauseButton = createButton("⏸");
   pauseButton.position(width / 2 - 20, 10);
   pauseButton.mousePressed(togglePause);
   pauseButton.style("font-size", "24px");
 
-  // 加入井
-  wells.push({ pos: createVector(100, 100), level: 1 });
-  wells.push({ pos: createVector(width - 100, 100), level: 2 });
-  wells.push({ pos: createVector(100, height - 200), level: 3 });
-  wells.push({ pos: createVector(width - 100, height - 200), level: 4 });
-  wells.push({ pos: createVector(width / 2, height / 4), level: 5 });
-
+  // 建立井跟敵人
+  wells.push({ pos: createVector(100, 100), level: wells_level[0] });
+  wells.push({ pos: createVector(width - 100, 100), level: wells_level[1] });
+  wells.push({ pos: createVector(100, height - 200), level: wells_level[2] });
+  wells.push({ pos: createVector(width - 100, height - 200), level: wells_level[3] });
+  wells.push({ pos: createVector(width / 2, height / 4), level: wells_level[4] });
   wells.forEach((w, i) => {
     const queue = [];
     for (let j = 0; j < 3; j++) queue.push("enemy");
     queue.push("boss");
-    shuffle(queue, true);
+    shuffle(queue, true); // 打亂順序
     w.spawnQueue = queue;
     w.emoji = wellEmojis[i];
     obstacles.push({ pos: w.pos, type: "well", level: w.level });
   });
 
-  // 中間障礙物
+  // 建立有刺障礙物
   obstacles.push({ pos: createVector(width / 2 - 150, height / 2), type: "spike" });
   obstacles.push({ pos: createVector(width / 2 + 150, height / 2), type: "spike" });
 
-  // 邊界障礙物
+  // 建立遊戲邊界障礙物
   const spacing = 10;
   for (let x = 0; x < width; x += spacing) {
     obstacles.push({ pos: createVector(x, 0), type: "wall" });
@@ -69,6 +71,7 @@ function setup() {
     obstacles.push({ pos: createVector(width - 1, y), type: "wall" });
   }
 
+  // 設定怪物生成間隔
   setInterval(() => {
     if (!gamePaused) {
       let candidates = wells.filter(w => w.spawnQueue.length > 0);
@@ -80,12 +83,244 @@ function setup() {
   }, 5000);
 }
 
+function draw() {
+  // 背景設為黑色
+  background(0);
+
+  // 遊戲結束畫面
+  if (gameOver) {
+    textSize(48);
+    text("Game  Over", width / 2, height / 2);
+    let btn = createButton("\u56de\u4e3b\u756b\u9762");
+    btn.position(width / 2, (height*3) / 5);
+    btn.mousePressed(() => window.location.href = "home.html");
+    noLoop();
+    return;
+  }
+
+  // 遊戲暫停畫面
+  if (gamePaused) {
+    pauseButton.hide();
+    return;
+  }
+
+  // 滑輪
+  moveJoystick.update();
+  shootJoystick.update();
+  moveVector = moveJoystick.getDirection();
+  shootVector = shootJoystick.getDirection();
+
+  // 障礙物款式
+  obstacles.forEach(ob => {
+    push();
+    textSize(48);
+    if (ob.type === "well") {
+      text("🗑", ob.pos.x, ob.pos.y);
+      fill(255);
+      textSize(12);
+      text("Lv " + ob.level, ob.pos.x, ob.pos.y + 30);
+    }
+    else if (ob.type === "wall") {  
+      noStroke();   
+      fill(255, 204, 0); 
+      rectMode(CENTER);  
+      rect(ob.pos.x, ob.pos.y, 40, 40); 
+    }
+    else if (ob.type === "spike")  text("🌵", ob.pos.x, ob.pos.y);
+    pop();
+  });
+
+  // Player移動
+  player.update(moveVector);
+  player.display();
+
+  // Player子彈
+  if (shootVector.mag() > 0)   player.shoot(shootVector);
+  bullets.forEach((b, i) => {
+    if (!gamePaused)  b.update();
+    b.display();
+
+    if (bulletHitsObstacle(b))    bullets.splice(i, 1);
+    else if (b.offscreen())   bullets.splice(i, 1);
+  });
+
+  // Enemy移動
+  enemies.forEach((e, i) => {
+    if (!gamePaused)  e.update();
+    e.display();
+
+    if (e.collides(player)) {
+      player.hp -= e.Body_Damage;
+      e.hp -= player.Body_Damage;
+      if (e.hp <= 0)  enemies.splice(i, 1);
+      if (player.hp <= 0) gameOver = true;
+    }
+
+    bullets.forEach((b, j) => {
+      if (b.hits(e)) {
+        bullets.splice(j, 1);
+        e.hp -= player.Bullet_Damage;
+        if (e.hp <= 0)  enemies.splice(i, 1);
+        }
+    });
+  });
+
+  // Enemy子彈
+  enemyBullets.forEach((eb, i) => {
+    if (!gamePaused)  eb.update();
+    eb.display();
+
+    if (bulletHitsObstacle(eb)) {
+      enemyBullets.splice(i, 1);
+      return;
+    }
+
+    if (eb.hits(player)) {
+      player.hp -= eb.Bullet_Damage;
+      enemyBullets.splice(i, 1);
+      if (player.hp <= 0) gameOver = true;
+    } else if (eb.offscreen()) {
+      enemyBullets.splice(i, 1);
+    }
+  });
+
+  // Boss移動
+  bosses.forEach((B, i) => {
+    if (!gamePaused)  B.update();
+    B.display();
+
+    if (B.collides(player)) {
+      player.hp -= B.Body_Damage;
+      B.hp -= player.Body_Damage;
+      if (B.hp <= 0)  {
+        let level = B.level;
+        bosses.splice(i, 1);
+        reload(level);
+      }
+        if (player.hp <= 0) gameOver = true;
+    }
+
+    bullets.forEach((b, j) => {
+      if (b.hits(B)) {
+        bullets.splice(j, 1);
+        B.hp -= player.Bullet_Damage;
+        if (B.hp <= 0)  {
+          let level = B.level;
+          bosses.splice(i, 1);
+          reload(level);
+        }
+      }
+    });
+  });
+
+  // Boss子彈
+  bossBullets.forEach((bb, i) => {
+    if (!gamePaused)  bb.update();
+    bb.display();
+
+    if (bulletHitsObstacle(bb)) {
+      bossBullets.splice(i, 1);
+      return;
+    }
+
+    if (bb.hits(player)) {
+      player.hp -= bb.Bullet_Damage;
+      bossBullets.splice(i, 1);
+      if (player.hp <= 0) gameOver = true;
+    } else if (bb.offscreen()) {
+      bossBullets.splice(i, 1);
+    }
+  });
+
+  // 詳情請查看Joystick.js
+  moveJoystick.display();
+  shootJoystick.display();
+}
+
+function spawnNextFromWell(well) {
+  if (gamePaused) { 
+    setTimeout(() => spawnNextFromWell(well), 1000); 
+    return;
+  }
+
+  if (well.spawnQueue.length === 0) return;
+  let type = well.spawnQueue.shift();
+  let offset = p5.Vector.random2D().mult(30);
+  let pos = p5.Vector.add(well.pos, offset);
+
+  if (type === "enemy") {
+    let emoji = well.emoji;
+    enemies.push(new Enemy(pos.x, pos.y, emoji));
+  } else if (type === "boss") {
+    let emoji = bossEmojis[well.level%5];
+    bosses.push(new Boss(pos.x, pos.y, emoji, well.level%5));
+  }
+  
+  // 冷卻並生成小怪
+  if (well.spawnQueue.length > 0)   setTimeout(() => spawnNextFromWell(well), 7000);
+}
+
+let spikeDamageCooldown = new Set();
+function collidesWithObstacle(pos) {
+  for (let ob of obstacles) {
+    if (dist(pos.x, pos.y, ob.pos.x, ob.pos.y) < 30) {
+      if (ob.type === "spike") {
+        let id = `${ob.pos.x},${ob.pos.y}`;
+        if (!spikeDamageCooldown.has(id)) {
+          spikeDamageCooldown.add(id);
+          player.hp--;
+          if (player.hp <= 0) gameOver = true;
+          setTimeout(() => spikeDamageCooldown.delete(id), 1000);
+        }
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+function reload(lv) {
+  wells.forEach(well => {
+    well.queue = [];
+  });
+  enemies = [];
+  enemyBullets = [];
+  bosses = [];
+  bossBullets = [];
+
+  // 刷新井的等級跟敵人
+  wells.forEach((w, i) => {
+    w.level += lv;
+
+    const queue = [];
+    for (let j = 0; j < 3; j++) queue.push("enemy");
+    queue.push("boss");
+    shuffle(queue, true); // 打亂順序
+    w.spawnQueue = queue;
+    let obstacle = obstacles.find(ob => ob.type === "well" && ob.pos.equals(w.pos));
+    if (obstacle)   obstacle.level = w.level;
+  });
+}
+
+// 暫停頁面
 function togglePause() {
+  wells.forEach((well, index) => {
+    const enemyIcons = well.spawnQueue.map(type => {
+      if (type === "enemy") {
+        return well.enemyEmoji || "👾"; // 預設敵人emoji
+      } else if (type === "boss") {
+        return well.bossEmoji || "👹";  // 預設boss emoji
+      }
+      return "?";
+    }).join(" ");
+
+    console.log(`${well.emoji || "🕳️"} 井 ${index + 1} (Lv${well.level}) 剩下: ${enemyIcons}`);
+  });
+
   gamePaused = !gamePaused;
   if (gamePaused) {
     pauseButton.hide();
 
-    // Create the pause menu container
     pauseMenu = createElement('div');
     pauseMenu.style('background', 'rgba(0,0,0,0.8)');
     pauseMenu.style('padding', '20px');
@@ -102,16 +337,14 @@ function togglePause() {
     pauseMenu.style('justify-content', 'center');
     pauseMenu.style('align-items', 'center');
 
-    // Title
     let title = createElement('h2', '遊戲暫停');
     title.style('margin-bottom', '30px');
     pauseMenu.child(title);
 
-    // Create the first div for the first two buttons
     let topButtonDiv = createElement('div');
     topButtonDiv.style('display', 'flex');
-    topButtonDiv.style('gap', '20px'); // Add some space between buttons
-    topButtonDiv.style('justify-content', 'center'); // Horizontally align buttons
+    topButtonDiv.style('gap', '20px');
+    topButtonDiv.style('justify-content', 'center');
 
     let resumeButton = createButton('繼續遊戲');
     resumeButton.mousePressed(resumeGame);
@@ -127,11 +360,10 @@ function togglePause() {
 
     pauseMenu.child(topButtonDiv);
 
-    // Create the second div for the remaining three buttons
     let bottomButtonDiv = createElement('div');
     bottomButtonDiv.style('display', 'flex');
-    bottomButtonDiv.style('gap', '20px'); // Add some space between buttons
-    bottomButtonDiv.style('justify-content', 'center'); // Horizontally align buttons
+    bottomButtonDiv.style('gap', '20px');
+    bottomButtonDiv.style('justify-content', 'center');
 
     let saveButton = createButton('儲存進度');
     saveButton.mousePressed(() => alert('儲存進度尚未實作'));
@@ -153,7 +385,6 @@ function togglePause() {
 
     pauseMenu.child(bottomButtonDiv);
 
-    // Append pauseMenu to the body
     document.body.appendChild(pauseMenu.elt);
 
   } else {
@@ -162,391 +393,9 @@ function togglePause() {
   }
 }
 
+// 繼續遊戲
 function resumeGame() {
   gamePaused = false;
   if (pauseMenu) pauseMenu.remove();
   pauseButton.show();
-}
-
-function draw() {
-  background(0);
-
-  if (gameOver) {
-    textSize(48);
-    text("Game Over", width / 2, height / 2);
-    let btn = createButton("\u56de\u4e3b\u756b\u9762");
-    btn.position(width / 2 - 50, height / 2 + 50);
-    btn.mousePressed(() => window.location.href = "home.html");
-    noLoop();
-    return;
-  }
-
-  if (gamePaused) {
-    moveJoystick.display();
-    shootJoystick.display();
-    return;
-  }
-
-  moveJoystick.update();
-  shootJoystick.update();
-
-  moveVector = moveJoystick.getDirection();
-  shootVector = shootJoystick.getDirection();
-
-  player.update(moveVector);
-  player.display();
-
-  obstacles.forEach(ob => {
-    push();
-    if (ob.type === "well") fill(100, 100, 255);
-    else if (ob.type === "wall") {    noStroke();   fill(255, 204, 0); }
-    else if (ob.type === "spike") fill(255, 0, 0);
-    rectMode(CENTER);
-    rect(ob.pos.x, ob.pos.y, 40, 40);
-
-    if (ob.type === "well") {
-      fill(255);
-      textSize(14);
-      text("Lv" + ob.level, ob.pos.x, ob.pos.y + 30);
-    }
-    pop();
-  });
-
-  enemyBullets.forEach((eb, i) => {
-    eb.update();
-    eb.display();
-
-    if (bulletHitsObstacle(eb)) {
-      enemyBullets.splice(i, 1);
-      return;
-    }
-
-    if (eb.hits(player)) {
-      player.hp--;
-      enemyBullets.splice(i, 1);
-      if (player.hp <= 0) gameOver = true;
-    } else if (eb.offscreen()) {
-      enemyBullets.splice(i, 1);
-    }
-  });
-
-  if (shootVector.mag() > 0) {
-    player.shoot(shootVector);
-  }
-
-  bullets.forEach((b, i) => {
-    b.update();
-    b.display();
-
-    if (bulletHitsObstacle(b)) {
-      bullets.splice(i, 1);
-    } else if (b.offscreen()) {
-      bullets.splice(i, 1);
-    }
-  });
-
-  enemies.forEach((e, i) => {
-    e.update();
-    e.display();
-
-    if (e.collides(player)) {
-      player.hp--;
-      enemies.splice(i, 1);
-      if (player.hp <= 0) gameOver = true;
-    }
-
-    bullets.forEach((b, j) => {
-      if (b.hits(e)) {
-        bullets.splice(j, 1);
-        e.hp--;
-        if (e.hp <= 0) {
-          enemies.splice(i, 1);
-        }
-        }
-    });
-  });
-
-  if (boss) {
-    boss.update();
-    boss.display();
-
-    bullets.forEach((b, i) => {
-      if (b.hits(boss)) {
-        boss.hp--;
-        bullets.splice(i, 1);
-        if (boss.hp <= 0) {
-          boss = null;
-          textSize(48);
-          fill(255, 0, 0);
-          text("You Win!", width / 2, height / 2);
-          noLoop();
-        }
-      }
-    });
-
-    boss.bullets.forEach((bb, i) => {
-      bb.update();
-      bb.display();
-      if (bb.hits(player)) {
-        playerHitCount++;
-        boss.bullets.splice(i, 1);
-        if (playerHitCount >= 3) gameOver = true;
-      }
-    });
-  }
-
-  moveJoystick.display();
-  shootJoystick.display();
-}
-
-function spawnNextFromWell(well) {
-  if (well.spawnQueue.length === 0) return;
-  let type = well.spawnQueue.shift();
-  let offset = p5.Vector.random2D().mult(30);
-  let pos = p5.Vector.add(well.pos, offset);
-
-  if (type === "enemy") {
-    let emoji = well.emoji;
-    enemies.push(new Enemy(pos.x, pos.y, emoji));
-  } else if (type === "boss") {
-    let emoji = bossEmojis[well.level - 1];
-    boss = new Boss(pos.x, pos.y, emoji);
-    bossActive = true;
-  }
-
-  if (well.spawnQueue.length > 0) {
-    setTimeout(() => spawnNextFromWell(well), 3000);
-  }
-}
-
-function bulletHitsObstacle(bullet) {
-  return obstacles.some(ob => dist(bullet.pos.x, bullet.pos.y, ob.pos.x, ob.pos.y) < 25);
-}
-
-function drawHealthBar(x, y, hp, maxHp) {
-  let barWidth = 40;
-  let barHeight = 5;
-  let pct = hp / maxHp;
-  stroke(255);
-  fill(100);
-  rect(x - barWidth / 2, y, barWidth, barHeight);
-  fill(255, 0, 0);
-  rect(x - barWidth / 2, y, barWidth * pct, barHeight);
-}
-
-class Player {
-  constructor(x, y) {
-    this.pos = createVector(x, y);
-    this.cooldown = 0;
-    this.hp = 3; // 加入血量
-  }
-
-  update(vec) {
-    let next = this.pos.copy().add(vec.copy().mult(5));
-    if (!collidesWithObstacle(next, true)) {
-      this.pos = next;
-    }
-    if (this.cooldown > 0) this.cooldown--;
-  }
-
-  display() {
-    textSize(32);
-    text("😄", this.pos.x, this.pos.y);
-    drawHealthBar(this.pos.x, this.pos.y - 30, this.hp, 3);
-  }
-
-  shoot(vec) {
-    if (this.cooldown <= 0) {
-      bullets.push(new Bullet(this.pos.x, this.pos.y, vec.copy().normalize().mult(7), "player"));
-      this.cooldown = 15;
-    }
-  }
-}
-
-class Enemy {
-  constructor(x, y, emoji = "😢") {
-    this.pos = createVector(x, y);
-    this.cooldown = int(random(30, 90));
-    this.moveDir = p5.Vector.random2D().mult(2);
-    this.changeDirCounter = 0;
-    this.emoji = emoji;
-    this.hp = 1; // 加一點血量
-  }
-
-  update() {
-    let next = this.pos.copy().add(this.moveDir);
-    if (!collidesWithObstacle(next)) this.pos = next;
-
-    this.changeDirCounter++;
-    if (this.changeDirCounter > 30) {
-      this.moveDir = p5.Vector.random2D().mult(2);
-      this.changeDirCounter = 0;
-    }
-
-    this.cooldown--;
-    if (this.cooldown <= 0) {
-      let dir = p5.Vector.sub(player.pos, this.pos).normalize();
-      enemyBullets.push(new Bullet(this.pos.x, this.pos.y, dir.mult(4), "enemy"));
-      this.cooldown = int(random(60, 100));
-    }
-  }
-
-  display() {
-    textSize(32);
-    text(this.emoji, this.pos.x, this.pos.y);
-    drawHealthBar(this.pos.x, this.pos.y - 25, this.hp, 1);
-  }
-
-  collides(p) {
-    return dist(this.pos.x, this.pos.y, p.pos.x, p.pos.y) < 30;
-  }
-}
-
-let spikeDamageCooldown = new Set();
-
-function collidesWithObstacle(pos, checkSpike = true) {
-  for (let ob of obstacles) {
-    if (dist(pos.x, pos.y, ob.pos.x, ob.pos.y) < 30) {
-      if (ob.type === "spike" && checkSpike) {
-        let id = `${ob.pos.x},${ob.pos.y}`;
-        if (!spikeDamageCooldown.has(id)) {
-          spikeDamageCooldown.add(id);
-          player.hp--;
-          if (player.hp <= 0) gameOver = true;
-          setTimeout(() => spikeDamageCooldown.delete(id), 1000);
-        }
-      }
-      return true;
-    }
-  }
-  return false;
-}
-
-class Bullet {
-  constructor(x, y, vel, type) {
-    this.pos = createVector(x, y);
-    this.vel = vel;
-    this.type = type;
-  }
-
-  update() {
-    this.pos.add(this.vel);
-  }
-
-  display() {
-    fill(this.type === "player" ? "yellow" : "red");
-    ellipse(this.pos.x, this.pos.y, 10);
-  }
-
-  offscreen() {
-    return (this.pos.x < 0 || this.pos.x > width || this.pos.y < 0 || this.pos.y > height);
-  }
-
-  hits(target) {
-    return dist(this.pos.x, this.pos.y, target.pos.x, target.pos.y) < 25;
-  }
-}
-
-class Boss {
-  constructor(x, y, emoji = "👹") {
-    this.pos = createVector(x, y);
-    this.hp = 3;
-    this.bullets = [];
-    this.cooldown = 0;
-    this.moveDir = p5.Vector.random2D().mult(2);
-    this.changeDirCounter = 0;
-    this.emoji = emoji;
-  }
-
-  update() {
-    this.pos.add(this.moveDir);
-    this.pos.x = constrain(this.pos.x, 0, width);
-    this.pos.y = constrain(this.pos.y, 0, height);
-
-    this.changeDirCounter++;
-    if (this.changeDirCounter > 40) {
-      this.moveDir = p5.Vector.random2D().mult(2);
-      this.changeDirCounter = 0;
-    }
-
-    if (this.cooldown <= 0) {
-      let dir1 = p5.Vector.sub(player.pos, this.pos).normalize().rotate(PI / 12);
-      let dir2 = p5.Vector.sub(player.pos, this.pos).normalize().rotate(-PI / 12);
-      this.bullets.push(new Bullet(this.pos.x, this.pos.y, dir1.mult(5), "enemy"));
-      this.bullets.push(new Bullet(this.pos.x, this.pos.y, dir2.mult(5), "enemy"));
-      this.cooldown = 60;
-    } else {
-      this.cooldown--;
-    }
-
-    this.bullets.forEach((b, i) => {
-      b.update();
-      if (b.offscreen()) this.bullets.splice(i, 1);
-    });
-  }
-
-  display() {
-    textSize(48);
-    text(this.emoji, this.pos.x, this.pos.y);
-    drawHealthBar(this.pos.x, this.pos.y - 40, this.hp, 3);
-  }
-}
-
-class Joystick {
-  constructor(x, y) {
-    this.base = createVector(x, y);
-    this.knob = this.base.copy();
-    this.radius = 40;
-    this.active = false;
-  }
-
-  update() {
-    this.active = false;
-    this.knob = this.base.copy();
-
-    let controllingPoint = null;
-
-    if (touches.length > 0) {
-      let closestTouch = null;
-      let minDist = Infinity;
-
-      for (let t of touches) {
-        let d = dist(t.x, t.y, this.base.x, this.base.y);
-        if (d < this.radius * 2.5 && d < minDist) {
-          minDist = d;
-          closestTouch = t;
-        }
-      }
-
-      if (closestTouch) {
-        controllingPoint = createVector(closestTouch.x, closestTouch.y);
-      }
-    } else if (mouseIsPressed) {
-      let d = dist(mouseX, mouseY, this.base.x, this.base.y);
-      if (d < this.radius * 2.5) {
-        controllingPoint = createVector(mouseX, mouseY);
-      }
-    }
-
-    if (controllingPoint) {
-      this.knob = controllingPoint;
-      this.active = true;
-    }
-  }
-
-  getDirection() {
-    return p5.Vector.sub(this.knob, this.base).limit(1);
-  }
-
-  display() {
-    noFill();
-    stroke(255);
-    ellipse(this.base.x, this.base.y, this.radius * 2.5);
-    fill(200);
-    ellipse(this.knob.x, this.knob.y, this.radius);
-  }
-}
-
-function touchMoved() {
-  return false;
 }
