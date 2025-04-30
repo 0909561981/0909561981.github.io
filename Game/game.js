@@ -8,15 +8,16 @@ let bosses = [];
 let bossBullets = [];
 
 let gameOver = false;
-
 let gamePaused = false;
+let enemyID;
+let time;
 
 let moveJoystick, shootJoystick;
 let moveVector, shootVector;
 
 const wells = [];
 const obstacles = [];
-const wells_level = [1,2,3,4,5];
+let wells_level = [1,2,3,4,5]; // 可從後端讀取
 const wellEmojis = ["😠", "🤕", "🤬", "😷", "🤮"];
 const bossEmojis = ["🚓", "🚑", "🚒", "🚜", "🚁"];
 
@@ -36,16 +37,16 @@ function setup() {
 
   // 建立暫停按鈕
   pauseButton = createButton("⏸");
-  pauseButton.position(width / 2 - 20, 10);
+  pauseButton.position(width / 2 - width/40, width/80);
   pauseButton.mousePressed(togglePause);
   pauseButton.style("font-size", "24px");
 
   // 建立井跟敵人
-  wells.push({ pos: createVector(100, 100), level: wells_level[0] });
-  wells.push({ pos: createVector(width - 100, 100), level: wells_level[1] });
-  wells.push({ pos: createVector(100, height - 200), level: wells_level[2] });
-  wells.push({ pos: createVector(width - 100, height - 200), level: wells_level[3] });
-  wells.push({ pos: createVector(width / 2, height / 4), level: wells_level[4] });
+  wells.push({ pos: createVector(width/8, width/8), index: 0 });
+  wells.push({ pos: createVector(width - width/8, width/8), index: 1 });
+  wells.push({ pos: createVector(width/8, height - width/4), index: 2 });
+  wells.push({ pos: createVector(width - width/8, height - width/4), index: 3 });
+  wells.push({ pos: createVector(width / 2, height / 4), index: 4 });
   wells.forEach((w, i) => {
     const queue = [];
     for (let j = 0; j < 3; j++) queue.push("enemy");
@@ -53,12 +54,12 @@ function setup() {
     shuffle(queue, true); // 打亂順序
     w.spawnQueue = queue;
     w.emoji = wellEmojis[i];
-    obstacles.push({ pos: w.pos, type: "well", level: w.level });
+    obstacles.push({ pos: w.pos, type: "well", index: i });
   });
 
   // 建立有刺障礙物
-  obstacles.push({ pos: createVector(width / 2 - 150, height / 2), type: "spike" });
-  obstacles.push({ pos: createVector(width / 2 + 150, height / 2), type: "spike" });
+  obstacles.push({ pos: createVector(width / 2 - width*3/16, height / 2), type: "spike" });
+  obstacles.push({ pos: createVector(width / 2 + width*3/16, height / 2), type: "spike" });
 
   // 建立遊戲邊界障礙物
   const spacing = 10;
@@ -72,15 +73,14 @@ function setup() {
   }
 
   // 設定怪物生成間隔
-  setInterval(() => {
-    if (!gamePaused) {
-      let candidates = wells.filter(w => w.spawnQueue.length > 0);
-      if (candidates.length > 0) {
-        let well = random(candidates);
-        spawnNextFromWell(well);
-      }
+  if (!gamePaused) {
+    let candidates = wells.filter(w => w.spawnQueue.length > 0);
+    if (candidates.length > 0) {
+      let well = random(candidates);
+      time = Date.now()
+      enemyID = setTimeout(() => spawnNextFromWell(well), 4000);
     }
-  }, 5000);
+  }
 }
 
 function draw() {
@@ -118,7 +118,7 @@ function draw() {
       text("🗑", ob.pos.x, ob.pos.y);
       fill(255);
       textSize(12);
-      text("Lv " + ob.level, ob.pos.x, ob.pos.y + 30);
+      text("Lv " + wells_level[ob.index], ob.pos.x, ob.pos.y + 30);
     }
     else if (ob.type === "wall") {  
       noStroke();   
@@ -179,9 +179,8 @@ function draw() {
       player.hp -= eb.Bullet_Damage;
       enemyBullets.splice(i, 1);
       if (player.hp <= 0) gameOver = true;
-    } else if (eb.offscreen()) {
-      enemyBullets.splice(i, 1);
-    }
+    } 
+    else if (eb.offscreen())    enemyBullets.splice(i, 1);
   });
 
   // Boss移動
@@ -193,11 +192,10 @@ function draw() {
       player.hp -= B.Body_Damage;
       B.hp -= player.Body_Damage;
       if (B.hp <= 0)  {
-        let level = B.level;
         bosses.splice(i, 1);
-        reload(level);
+        reload(B.index);
       }
-        if (player.hp <= 0) gameOver = true;
+      if (player.hp <= 0) gameOver = true;
     }
 
     bullets.forEach((b, j) => {
@@ -205,9 +203,9 @@ function draw() {
         bullets.splice(j, 1);
         B.hp -= player.Bullet_Damage;
         if (B.hp <= 0)  {
-          let level = B.level;
           bosses.splice(i, 1);
-          reload(level);
+          console.log("lv. ",wells_level[B.index]," 被擊敗");
+          reload(B.index);
         }
       }
     });
@@ -227,9 +225,8 @@ function draw() {
       player.hp -= bb.Bullet_Damage;
       bossBullets.splice(i, 1);
       if (player.hp <= 0) gameOver = true;
-    } else if (bb.offscreen()) {
-      bossBullets.splice(i, 1);
     }
+    else if (bb.offscreen())    bossBullets.splice(i, 1);
   });
 
   // 詳情請查看Joystick.js
@@ -238,12 +235,8 @@ function draw() {
 }
 
 function spawnNextFromWell(well) {
-  if (gamePaused) { 
-    setTimeout(() => spawnNextFromWell(well), 1000); 
-    return;
-  }
-
   if (well.spawnQueue.length === 0) return;
+
   let type = well.spawnQueue.shift();
   let offset = p5.Vector.random2D().mult(30);
   let pos = p5.Vector.add(well.pos, offset);
@@ -252,12 +245,18 @@ function spawnNextFromWell(well) {
     let emoji = well.emoji;
     enemies.push(new Enemy(pos.x, pos.y, emoji));
   } else if (type === "boss") {
-    let emoji = bossEmojis[well.level%5];
-    bosses.push(new Boss(pos.x, pos.y, emoji, well.level%5));
+    let emoji = bossEmojis[well.index];
+    bosses.push(new Boss(pos.x, pos.y, emoji, well.index));
+    console.log(emoji,"這個BOSS是lv",wells_level[well.index]);
   }
   
   // 冷卻並生成小怪
-  if (well.spawnQueue.length > 0)   setTimeout(() => spawnNextFromWell(well), 7000);
+  let candidates = wells.filter(w => w.spawnQueue.length > 0);
+  if (candidates.length > 0) {
+    let well = random(candidates);
+    time = Date.now()
+    enemyID = setTimeout(() => spawnNextFromWell(well), 7000);
+  }
 }
 
 let spikeDamageCooldown = new Set();
@@ -279,7 +278,8 @@ function collidesWithObstacle(pos) {
   return false;
 }
 
-function reload(lv) {
+function reload(index) {
+  clearTimeout(enemyID);
   wells.forEach(well => {
     well.queue = [];
   });
@@ -289,17 +289,25 @@ function reload(lv) {
   bossBullets = [];
 
   // 刷新井的等級跟敵人
-  wells.forEach((w, i) => {
-    w.level += lv;
+  let lv = wells_level[index];
+  for (let i = 0; i < wells_level.length; i++)    wells_level[(index + i) % wells_level.length] = lv + i;
 
+  // 重新生成enemy跟boss
+  wells.forEach((w, i) => {
     const queue = [];
     for (let j = 0; j < 3; j++) queue.push("enemy");
     queue.push("boss");
     shuffle(queue, true); // 打亂順序
     w.spawnQueue = queue;
     let obstacle = obstacles.find(ob => ob.type === "well" && ob.pos.equals(w.pos));
-    if (obstacle)   obstacle.level = w.level;
   });
+
+  let candidates = wells.filter(w => w.spawnQueue.length > 0);
+  if (candidates.length > 0) {
+    let well = random(candidates);
+    time = Date.now()
+    enemyID = setTimeout(() => spawnNextFromWell(well), 4000);
+  }
 }
 
 // 暫停頁面
@@ -320,6 +328,8 @@ function togglePause() {
   gamePaused = !gamePaused;
   if (gamePaused) {
     pauseButton.hide();
+    clearTimeout(enemyID);
+    time = Date.now() - time;
 
     pauseMenu = createElement('div');
     pauseMenu.style('background', 'rgba(0,0,0,0.8)');
@@ -386,10 +396,6 @@ function togglePause() {
     pauseMenu.child(bottomButtonDiv);
 
     document.body.appendChild(pauseMenu.elt);
-
-  } else {
-    if (pauseMenu) pauseMenu.remove();
-    pauseButton.show();
   }
 }
 
@@ -398,4 +404,11 @@ function resumeGame() {
   gamePaused = false;
   if (pauseMenu) pauseMenu.remove();
   pauseButton.show();
+  
+  let candidates = wells.filter(w => w.spawnQueue.length > 0);
+  if (candidates.length > 0) {
+    let well = random(candidates);
+    enemyID = setTimeout(() => spawnNextFromWell(well), 7000-time);
+    time = Date.now()
+  }
 }
