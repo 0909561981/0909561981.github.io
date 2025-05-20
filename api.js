@@ -2,7 +2,8 @@
 
 window.ApiService = {
     async getNgrokUrl() {
-      const res = await fetch('https://gist.githubusercontent.com/xmu310/bcd3d6d17926e0d772faf1fbe1faf505/raw');
+      // const res = await fetch('https://gist.githubusercontent.com/xmu310/bcd3d6d17926e0d772faf1fbe1faf505/raw');
+      const res = await fetch('https://gist.githubusercontent.com/0909561981/36fdebf0f5cebc88b6b4ba8e4707f6e9/raw');
       return (await res.text()).trim();
   
       // 本地測試時改用下面這行

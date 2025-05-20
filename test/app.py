@@ -3,13 +3,13 @@ from flask_cors import CORS
 import mysql.connector
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 # 資料庫設定
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'ntnupassword',
+    'password': 'deesdees',
     'database': 'gamedb'
 }
 
@@ -62,6 +62,20 @@ def login():
     else:
         return jsonify({'success': False, 'message': '帳號或密碼錯誤'})
 
+@app.route('/ranking', methods=['POST', 'OPTIONS'])
+@cross_origin(origin='*')  # or specific domain like origin='http://127.0.0.1:8080'
+def ranking():
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT u.account, r.lv FROM ranking_list r JOIN users u ON r.user_id = u.id ORDER BY r.lv DESC")
+        results = cursor.fetchall()
+        return jsonify({'success': True, 'ranking': results})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 if __name__ == '__main__':
     app.run(port=5000)
