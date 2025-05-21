@@ -29,7 +29,7 @@
       const password = document.getElementById('password').value.trim();
 
       const data = await auth.submit(account, password);
-      auth.handleResponse(data, 'home.html');
+      auth.handleResponse(data, `home.html?account=${encodeURIComponent(account)}`);
     }
   </script>
 </body>

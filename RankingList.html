@@ -66,6 +66,34 @@
     <div class="self-rank">⭐ 屎蛋 - Lv1</div>
   </div>  
 
-  <button class="back-button" onclick="location.href='home.html'">← 返回</button>
+  <!-- <button class="back-button" onclick="location.href='home.html'">← 返回</button> -->
+  <button class="back-button" id="backBtn">← 返回</button>
+
+  <script>
+    // 讀取 URL 參數
+    function getUrlParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    // 取得帳號
+    let account = getUrlParam('account') || localStorage.getItem('account') || '';
+    
+    // 更新返回按鈕連結，帶帳號參數
+    const backBtn = document.getElementById('backBtn');
+    backBtn.onclick = () => {
+      location.href = 'home.html' + (account ? `?account=${encodeURIComponent(account)}` : '');
+    };
+
+    function updateSelfRank() {
+      let account = getUrlParam('account') || localStorage.getItem('account') || '屎蛋';
+      const selfRankDiv = document.querySelector('.self-rank');
+
+      // 你可以自由改等級或其他內容，這邊示範 Lv1
+      selfRankDiv.textContent = `⭐ ${account} - Lv1`;
+    }
+
+    updateSelfRank();
+  </script>
 </body>
 </html>

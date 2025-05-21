@@ -14,6 +14,19 @@
       const bgm = document.getElementById('bgm');
       bgm.play().catch(() => {});
     }, { once: true });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const account = urlParams.get('account');
+      const playerName = document.getElementById('PlayerName');
+
+      if (account) {
+        playerName.textContent = account;
+        localStorage.setItem('account', account);
+      } else {
+        playerName.textContent = '未登入';
+      }
+    });
   </script>
 
   <div class="Player_Information">
@@ -22,9 +35,34 @@
   </div>
 
   <!-- <button class="Upgrade_Bottom" onclick="location.href='Upgrade.html'">升級</button> -->
-  <button class="Play_Bottom" onclick="location.href='Game.html'">PLAY</button>
+  <!-- <button class="Play_Bottom" onclick="location.href='Game.html'">PLAY</button>
   <button class="History_Bottom" onclick="location.href='history.html'">我的紀錄</button>
-  <button class="RankingList_Bottom" onclick="location.href='RankingList.html'">排行榜</button>
+  <button class="RankingList_Bottom" onclick="location.href='RankingList.html'">排行榜</button> -->
+  <button class="Play_Bottom" onclick="goToPage('Game.html')">PLAY</button>
+  <button class="History_Bottom" onclick="goToPage('history.html')">我的紀錄</button>
+  <button class="RankingList_Bottom" onclick="goToPage('RankingList.html')">排行榜</button>
+
+  <script>
+    function getAccount() {
+      // 優先從 localStorage，沒有再從 URL 參數取
+      let account = localStorage.getItem('account');
+      if (!account) {
+        const urlParams = new URLSearchParams(window.location.search);
+        account = urlParams.get('account');
+      }
+      return account || '';
+    }
+
+    function goToPage(page) {
+      const account = encodeURIComponent(getAccount());
+      if (account) {
+        window.location.href = `${page}?account=${account}`;
+      } else {
+        alert('未取得帳號，請重新登入');
+        window.location.href = 'login.html';
+      }
+    }
+  </script>
 
  
 </body>
