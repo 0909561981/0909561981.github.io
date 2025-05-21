@@ -3,7 +3,7 @@ import time
 
 # == 請填入你自己的資訊 ==
 GIST_ID = '36fdebf0f5cebc88b6b4ba8e4707f6e9'
-GITHUB_TOKEN = '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'
+GITHUB_TOKEN = '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'
 
 def get_ngrok_url():
     try:
