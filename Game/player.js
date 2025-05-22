@@ -1,14 +1,14 @@
 class Player {
   // 建立Player的屬性
-  constructor(x, y) {
+  constructor(x, y, Max_Health, Movement_Speed, Bullet_Damage, Body_Damage, Bullet_Frequency, Health_Regen, Bullet_Speed) {
     this.pos = createVector(x, y);
-    this.Max_Health = 3;
-    this.Movement_Speed = 10;
-    this.Bullet_Damage = 1;
-    this.Body_Damage = 3;
-    this.Bullet_Frequency = 10;
-    this.Health_Regen = 0.01;
-    this.Bullet_Speed = 10;
+    this.Max_Health = Max_Health * 3;
+    this.Movement_Speed = Movement_Speed * 10;
+    this.Bullet_Damage = Bullet_Damage * 1;
+    this.Body_Damage = Body_Damage * 1;
+    this.Bullet_Frequency = Bullet_Frequency * 10;
+    this.Health_Regen = Health_Regen * 0.01;
+    this.Bullet_Speed = Bullet_Speed * 10;
   
     this.cooldown = 0;
     this.hp = this.Max_Health;

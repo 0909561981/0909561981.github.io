@@ -9,14 +9,23 @@
 <body>
   <div id="gameover-screen">
     Game Over
-    <button onclick="location.href='home.html'">回主畫面</button>
+    <button id="backBtn">← 回主畫面</button>
   </div>
   <script src="p5.js"></script>
+  <script src="api.js"></script>
+  <script src="test.js"></script>
   <script src="./Game/player.js"></script>
   <script src="./Game/enemy.js"></script>
   <script src="./Game/boss.js"></script>
   <script src="./Game/bullet.js"></script>
   <script src="./Game/Joystick.js"></script>
   <script src="./Game/game.js"></script>
+  <script>
+    // 更新返回按鈕連結，帶帳號參數
+    const backBtn = document.getElementById('backBtn');
+    backBtn.onclick = () => {
+      location.href = 'home.html' + (account ? `?account=${encodeURIComponent(account)}` : '');
+    };
+  </script>
 </body>
 </html>

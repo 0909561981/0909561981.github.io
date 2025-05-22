@@ -8,6 +8,8 @@
 </head>
 <body>
   <audio id="bgm" src="bgm.mp3" autoplay loop></audio>
+  <script src="api.js"></script>
+  <script src="common.js"></script>
   <script>
     // 修正瀏覽器自動播放限制問題
     window.addEventListener('click', () => {
@@ -43,26 +45,37 @@
   <button class="RankingList_Bottom" onclick="goToPage('RankingList.html')">排行榜</button>
 
   <script>
-    function getAccount() {
-      // 優先從 localStorage，沒有再從 URL 參數取
-      let account = localStorage.getItem('account');
-      if (!account) {
-        const urlParams = new URLSearchParams(window.location.search);
-        account = urlParams.get('account');
-      }
-      return account || '';
+  function getAccount() {
+    let account = localStorage.getItem('account');
+    if (!account) {
+      const urlParams = new URLSearchParams(window.location.search);
+      account = urlParams.get('account');
     }
+    return account || '';
+  }
 
-    function goToPage(page) {
-      const account = encodeURIComponent(getAccount());
-      if (account) {
-        window.location.href = `${page}?account=${account}`;
-      } else {
-        alert('未取得帳號，請重新登入');
-        window.location.href = 'login.html';
-      }
+  async function initHomePage() {
+    const account = getAccount();
+    if (account) {
+      await fetchUserId(account);  // 拿 ID 並儲存
+    } else {
+      alert('尚未登入，請重新登入');
+      window.location.href = 'login.html';
     }
-  </script>
+  }
+
+  function goToPage(page) {
+    const account = encodeURIComponent(getAccount());
+    if (account) {
+      window.location.href = `${page}?account=${account}`;
+    } else {
+      alert('未取得帳號，請重新登入');
+      window.location.href = 'login.html';
+    }
+  }
+
+  initHomePage(); // 呼叫初始化
+</script>
 
  
 </body>

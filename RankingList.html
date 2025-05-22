@@ -59,16 +59,15 @@
   <div class="rank">
     <h3>🏆 排行榜</h3>
     <div class="rank-list">
-      <p>🥇1. GG蛋 - Lv10</p>
-      <p>🥈2. CC仔 - Lv8</p>
-      <p>🥉3. DD神 - Lv6</p>
+      <!-- 這裡動態生成前三名 -->
     </div>
     <div class="self-rank">⭐ 屎蛋 - Lv1</div>
   </div>  
 
-  <!-- <button class="back-button" onclick="location.href='home.html'">← 返回</button> -->
   <button class="back-button" id="backBtn">← 返回</button>
 
+  <script src="api.js"></script>
+  <script src="common.js"></script>
   <script>
     // 讀取 URL 參數
     function getUrlParam(name) {
@@ -94,6 +93,7 @@
     }
 
     updateSelfRank();
+    fetchRanking();  // 呼叫取得排行榜資料並更新
   </script>
 </body>
 </html>

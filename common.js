@@ -1,5 +1,4 @@
 // common.js
-
 window.AuthManager = class {
     constructor(mode = 'login') {
       this.mode = mode;
@@ -43,4 +42,52 @@ window.AuthManager = class {
       }
     }
   };
-  
+
+// 排行榜
+async function fetchRanking() {
+  try {
+    // 1. 先拿前三名排行榜
+    const topData = await ApiService.postToBackend('/get_ranking', {});
+    const rankListDiv = document.querySelector('.rank-list');
+    rankListDiv.innerHTML = '';
+    console.log('🏆 排行榜資料：', topData);
+
+    const medals = ['🥇', '🥈', '🥉'];
+    topData.forEach((entry, i) => {
+      const medal = medals[i] || `🏅${i + 1}.`;
+      const p = document.createElement('p');
+      p.textContent = `${medal} ${entry.account} - Lv${entry.lv}`;
+      rankListDiv.appendChild(p);
+    });
+
+    // 2. 再用帳號去查自己的等級
+    let account = getUrlParam('account') || localStorage.getItem('account') || '屎蛋';
+    const selfDiv = document.querySelector('.self-rank');
+
+    const selfData = await ApiService.postToBackend('/get_user_lv', { account });
+    if (selfData.success) {
+      selfDiv.textContent = `⭐ ${account} - Lv${selfData.lv}`;
+    } else {
+      selfDiv.textContent = `⭐ ${account} - Lv0`;
+    }
+  } catch (error) {
+    console.error('🚨 請求發生錯誤：', error);
+  }
+}
+
+// 成功拿到user_id
+async function fetchUserId(account) {
+  try {
+    const data = await ApiService.postToBackend('/get_id', { account });
+
+    if (data.success) {
+      localStorage.setItem('userId', data.id);
+      console.log('✅ 成功取得 userId:', data.id);
+    } else {
+      console.error('❌ 錯誤：', data.message);
+    }
+  } catch (error) {
+    console.error('🚨 請求發生錯誤：', error);
+  }
+}
+

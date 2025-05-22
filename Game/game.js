@@ -1,4 +1,5 @@
 let player;
+let playerData = null;
 let bullets = [];
 
 let enemies = [];
@@ -23,12 +24,35 @@ const bossEmojis = ["🚓", "🚑", "🚒", "🚜", "🚁"];
 
 let pauseButton, pauseMenu;
 
+// 讀取 URL 參數取得 account
+function getAccountFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('account');
+}
+
+async function main() {
+  const account = getAccountFromUrl();
+  console.log("Account from URL:", account);
+  
+  // 建立玩家
+  try {
+    playerData = await fetchPlayerInfo(account);
+    if (!playerData) throw new Error("玩家資料取得失敗");
+
+    player = new Player(width / 2, height / 2, playerData.max_health, playerData.movement_speed, playerData.bullet_damage, playerData.body_damage, playerData.bullet_frequency, playerData.health_regen, playerData.bullet_speed);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 function setup() {
   // 建立畫布(讓畫面適配瀏覽器)
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
-  player = new Player(width / 2, height / 2);
-
+  
+  // 建立玩家
+  // player = new Player(width / 2, height / 2, playerData.max_health, playerData.movement_speed, playerData.bullet_damage, playerData.body_damage, playerData.bullet_frequency, playerData.health_regen, playerData.bullet_speed);
+  
   // 建立滑輪
   moveJoystick = new Joystick(100, height - 100);
   shootJoystick = new Joystick(width - 100, height - 100);
@@ -81,6 +105,8 @@ function setup() {
       enemyID = setTimeout(() => spawnNextFromWell(well), 4000);
     }
   }
+
+  main();
 }
 
 function draw() {
@@ -129,6 +155,15 @@ function draw() {
     else if (ob.type === "spike")  text("🌵", ob.pos.x, ob.pos.y);
     pop();
   });
+
+  // 如果player還沒載入就return
+  if (!player) {
+    // 玩家還沒初始化完成，顯示等待訊息或空畫面
+    textSize(24);
+    fill(0);
+    text("Loading player data...", width / 2, height / 2);
+    return; // 不執行下面的更新繪製
+  }
 
   // Player移動
   player.update(moveVector);
@@ -382,7 +417,10 @@ function togglePause() {
     bottomButtonDiv.child(saveButton);
 
     let exitButton = createButton('離開遊戲');
-    exitButton.mousePressed(() => location.href = 'home.html');
+    exitButton.mousePressed(() => {
+      const account = getAccountFromUrl();
+      location.href = `home.html?account=${encodeURIComponent(account)}`;
+    });
     exitButton.style('padding', '15px 30px');
     exitButton.style('font-size', '18px');
     bottomButtonDiv.child(exitButton);

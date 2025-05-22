@@ -19,6 +19,16 @@ window.ApiService = {
       });
   
       return res.json();
+    },
+
+    // 新增 GET 方法
+    async getFromBackend(endpoint) {
+      const baseUrl = await this.getNgrokUrl();
+      const res = await fetch(`${baseUrl}${endpoint}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      return res.json();
     }
   };
-  

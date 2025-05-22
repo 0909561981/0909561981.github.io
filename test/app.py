@@ -13,6 +13,97 @@ db_config = {
     'database': 'gamedb'
 }
 
+@app.route('/get_player_info', methods=['POST'])
+def get_player_info():
+    data = request.get_json()
+    account = data.get('account')
+
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    query = '''
+        SELECT pi.max_health, pi.movement_speed, pi.bullet_damage, pi.body_damage,
+               pi.bullet_frequency, pi.health_regen, pi.bullet_speed, pi.lv
+        FROM player_information pi
+        JOIN users u ON pi.user_id = u.id
+        WHERE u.account = %s
+    '''
+    cursor.execute(query, (account,))
+    result = cursor.fetchone()
+    conn.close()
+
+    if result:
+        return jsonify({
+            'success': True,
+            'max_health': result[0],
+            'movement_speed': result[1],
+            'bullet_damage': result[2],
+            'body_damage': result[3],
+            'bullet_frequency': result[4],
+            'health_regen': result[5],
+            'bullet_speed': result[6],
+            'lv': result[7]
+        })
+    else:
+        return jsonify({'success': False, 'message': '找不到玩家資訊'})
+
+@app.route('/get_ranking', methods=['POST'])
+def get_ranking():
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT users.account, ranking_list.lv
+        FROM ranking_list
+        JOIN users ON ranking_list.user_id = users.id
+        ORDER BY ranking_list.lv DESC
+        LIMIT 3
+    ''')
+    result = cursor.fetchall()
+    conn.close()
+
+    ranking = [{'account': row[0], 'lv': row[1]} for row in result]
+    return jsonify(ranking)
+
+@app.route('/get_user_lv', methods=['POST'])
+def get_user_lv():
+    data = request.get_json()
+    account = data.get('account')
+
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT ranking_list.lv 
+        FROM ranking_list
+        JOIN users ON ranking_list.user_id = users.id
+        WHERE users.account = %s
+    ''', (account,))
+    result = cursor.fetchone()
+    conn.close()
+
+    if result:
+        return jsonify({'success': True, 'lv': result[0]})
+    else:
+        return jsonify({'success': False, 'message': '查無等級資料'})
+
+# tmp
+@app.route('/get_id', methods=['POST'])
+def get_id():
+    data = request.get_json()
+    account = data.get('account')
+    password = data.get('password')  # 已經是 hash 過的
+
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM users WHERE account = %s", (account,))
+    result = cursor.fetchone()
+
+    if result:
+            return jsonify({'success': True, 'id': result[0]})
+    else:
+        return jsonify({'success': False, 'message': '帳號不存在'})
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -62,6 +153,16 @@ def login():
     else:
         return jsonify({'success': False, 'message': '帳號或密碼錯誤'})
 
+#  查看後端有哪些功能
+@app.route('/routes', methods=['GET'])
+def list_routes():
+    import urllib
+    output = []
+    for rule in app.url_map.iter_rules():
+        methods = ','.join(rule.methods)
+        line = f"{rule.endpoint:20s} {methods:20s} {urllib.parse.unquote(str(rule))}"
+        output.append(line)
+    return "<pre>" + "\n".join(sorted(output)) + "</pre>"
 
 if __name__ == '__main__':
     app.run(port=5000)
