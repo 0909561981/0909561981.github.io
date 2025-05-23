@@ -13,6 +13,39 @@ db_config = {
     'database': 'gamedb'
 }
 
+@app.route('/getHistory', methods=['POST'])
+def get_history():
+    try:
+        data = request.get_json()
+        if not data or 'account' not in data:
+            return jsonify({'error': 'Missing account'}), 400
+
+        account = data['account']
+
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute('SELECT id FROM users WHERE account = %s', (account,))
+        user = cursor.fetchone()
+
+        if not user:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'User not found'}), 404
+
+        user_id = user['id']
+
+        cursor.execute('SELECT record1, record2, record3 FROM player_record WHERE user_id = %s', (user_id,))
+        record = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(record or {})
+    except Exception as e:
+        print('Error in /getHistory:', e)
+        return jsonify({'error': 'Server error'}), 500
+
 @app.route('/get_player_info', methods=['POST'])
 def get_player_info():
     data = request.get_json()

@@ -58,12 +58,60 @@
   <h1>⭐ 我的關卡紀錄</h1>
   <div class="history-container">
     <ol>
-      <li>🌌 最高關卡 - Lv10 完成</li>
-      <li>🔥 次等關卡 - Lv8 完成</li>
-      <li>🌲 三等關卡 - Lv6 完成</li>
     </ol>
   </div>
 
   <button class="back-button" onclick="location.href='home.html'">← 返回</button>
+  <script src="api.js"></script>
+  <script>
+    function getUrlParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    let account = getUrlParam('account') || localStorage.getItem('account') || '';
+
+    const backBtn = document.querySelector('.back-button');
+    backBtn.onclick = () => {
+      location.href = 'home.html' + (account ? `?account=${encodeURIComponent(account)}` : '');
+    };
+
+    function updateSelfTitle() {
+      const title = document.createElement('p');
+      title.style.textAlign = 'center';
+      title.style.marginTop = '10px';
+      title.textContent = `👤 Player：${account || '未知'}`;
+      document.body.insertBefore(title, document.querySelector('.history-container'));
+    }
+
+    async function fetchHistory() {
+      if (!account) return console.warn('找不到帳號');
+
+      try {
+        const data = await ApiService.postToBackend('/getHistory', { account });
+
+        const container = document.querySelector('.history-container ol');
+        container.innerHTML = '';
+
+        if (data.record1 !== null) container.innerHTML += `<li>🌌 上一次遊玩 - Lv${data.record1} 完成</li>`;
+        if (data.record2 !== null) container.innerHTML += `<li>🔥 上二次遊玩 - Lv${data.record2} 完成</li>`;
+        if (data.record3 !== null) container.innerHTML += `<li>🌲 上三次遊玩 - Lv${data.record3} 完成</li>`;
+
+        if (container.innerHTML.trim() === '') {
+          container.innerHTML = '<li>😢 尚未有任何紀錄</li>';
+        }
+
+      } catch (err) {
+        console.error('取得紀錄失敗：', err);
+        const container = document.querySelector('.history-container ol');
+        container.innerHTML = '<li>⚠️ 無法取得紀錄</li>';
+      }
+    }
+
+
+    updateSelfTitle();
+    fetchHistory();
+  </script>
+
 </body>
 </html>

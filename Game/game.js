@@ -106,6 +106,7 @@ function setup() {
     }
   }
 
+  // 前端跟後端拿資料
   main();
 }
 
@@ -157,13 +158,7 @@ function draw() {
   });
 
   // 如果player還沒載入就return
-  if (!player) {
-    // 玩家還沒初始化完成，顯示等待訊息或空畫面
-    textSize(24);
-    fill(0);
-    text("Loading player data...", width / 2, height / 2);
-    return; // 不執行下面的更新繪製
-  }
+  if (!player)   return; 
 
   // Player移動
   player.update(moveVector);
