@@ -23,6 +23,7 @@ const wellEmojis = ["😠", "🤕", "🤬", "😷", "🤮"];
 const bossEmojis = ["🚓", "🚑", "🚒", "🚜", "🚁"];
 
 let pauseButton, pauseMenu;
+let upgradeMenu, aboutMenu;
 
 // 讀取 URL 參數取得 account
 function getAccountFromUrl() {
@@ -393,7 +394,7 @@ function togglePause() {
     topButtonDiv.child(resumeButton);
 
     let upgradeButton = createButton('升級能力');
-    upgradeButton.mousePressed(() => location.href = 'Upgrade.html');
+    upgradeButton.mousePressed(() => showUpgradeScreen());
     upgradeButton.style('padding', '15px 30px');
     upgradeButton.style('font-size', '18px');
     topButtonDiv.child(upgradeButton);
@@ -421,7 +422,7 @@ function togglePause() {
     bottomButtonDiv.child(exitButton);
 
     let helpButton = createButton('說明');
-    helpButton.mousePressed(() => location.href = 'about.html');
+    helpButton.mousePressed(() => about());
     helpButton.style('padding', '15px 30px');
     helpButton.style('font-size', '18px');
     bottomButtonDiv.child(helpButton);

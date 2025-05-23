@@ -13,6 +13,58 @@ db_config = {
     'database': 'gamedb'
 }
 
+@app.route('/getPlayerStats', methods=['POST'])
+def get_player_stats():
+    data = request.get_json()
+    account = data.get('account')
+    if not account:
+        return jsonify({'error': '缺少帳號'}), 400
+    
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        # 先取得 user_id
+        cursor.execute("SELECT id FROM users WHERE account = %s", (account,))
+        user = cursor.fetchone()
+        if not user:
+            return jsonify({'error': '找不到該帳號'}), 404
+        
+        user_id = user['id']
+
+        # 從 player_information 撈七個屬性
+        cursor.execute("""
+            SELECT max_health, movement_speed, bullet_damage, body_damage, bullet_frequency, health_regen, bullet_speed
+            FROM player_information WHERE user_id = %s
+        """, (user_id,))
+        stats = cursor.fetchone()
+        if not stats:
+            return jsonify({'error': '找不到玩家資訊'}), 404
+
+        # 從 ranking_list 撈 lv
+        cursor.execute("SELECT lv FROM ranking_list WHERE user_id = %s", (user_id,))
+        rank = cursor.fetchone()
+        ranking_lv = rank['lv'] if rank else 0
+
+        # 計算升級點數 = 7屬性和 + (ranking_lv / 5) + 1
+        upgrade_points = 7-sum(stats.values()) + (ranking_lv / 5) + 1
+
+        # 回傳結果
+        response = {
+            **stats,
+            'upgrade_points': upgrade_points,
+            'ranking_lv': ranking_lv
+        }
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
 @app.route('/getHistory', methods=['POST'])
 def get_history():
     try:

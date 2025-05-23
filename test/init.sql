@@ -1,16 +1,8 @@
 -- 建立資料庫
--- CREATE DATABASE IF NOT EXISTS gamedb;
-DROP DATABASE IF EXISTS gamedb;
-CREATE DATABASE gamedb;
+CREATE DATABASE IF NOT EXISTS gamedb;
+
 -- 使用資料庫
 USE gamedb;
-
-SET FOREIGN_KEY_CHECKS=0;
-DROP TABLE IF EXISTS player_information;
-DROP TABLE IF EXISTS ranking_list;
-DROP TABLE IF EXISTS player_record;
-DROP TABLE IF EXISTS users;
-SET FOREIGN_KEY_CHECKS=1;
 
 -- 建立 users 表格
 CREATE TABLE IF NOT EXISTS users (
@@ -68,29 +60,29 @@ END;
 //
 
 -- ✅ 2. 更新 player_record.lv 時推移紀錄欄位
-CREATE TRIGGER before_update_record1
+CREATE TRIGGER after_player_record_update
 BEFORE UPDATE ON player_record
 FOR EACH ROW
 BEGIN
-  -- 只要 record1 欄位被設定（不論是否與原值相同）就 shift
-  IF NEW.record1 IS NOT NULL THEN
+  IF NEW.record1 IS NOT NULL AND NEW.record1 <> OLD.record1 THEN
     SET NEW.record3 = OLD.record2;
     SET NEW.record2 = OLD.record1;
-    -- NEW.record1 保留用戶設定的新值
+    -- NEW.record1 已由外部設定，不需要改
   END IF;
 END;
 //
 
 -- ✅ 3. 更新 player_record.lv 後，更新 ranking_list.lv（如果比較高）
-CREATE TRIGGER after_record_lv_to_ranking
+CREATE TRIGGER after_record1_to_ranking
 AFTER UPDATE ON player_record
 FOR EACH ROW
 BEGIN
   DECLARE current_rank INT;
+
   SELECT lv INTO current_rank FROM ranking_list WHERE user_id = NEW.user_id;
 
-  IF NEW.lv > current_rank THEN
-    UPDATE ranking_list SET lv = NEW.lv WHERE user_id = NEW.user_id;
+  IF NEW.record1 IS NOT NULL AND NEW.record1 > current_rank THEN
+    UPDATE ranking_list SET lv = NEW.record1 WHERE user_id = NEW.user_id;
   END IF;
 END;
 //

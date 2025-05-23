@@ -1,0 +1,233 @@
+function getAccount() {
+  let account = localStorage.getItem('account');
+  if (!account) {
+    const urlParams = new URLSearchParams(window.location.search);
+    account = urlParams.get('account');
+  }
+  return account || '';
+}
+
+async function fetchPlayerStats(account) {
+  try {
+    const response = await fetch('http://localhost:5000/getPlayerStats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account })
+    });
+    if (!response.ok) {
+      throw new Error(`伺服器回傳錯誤：${response.status}`);
+    }
+    const data = await response.json();
+    if (data.error) {
+      alert(data.error);
+      return null;
+    }
+    return data;
+  } catch (error) {
+    alert('無法取得玩家數值，請稍後再試');
+    console.error(error);
+    return null;
+  }
+}
+
+async function showUpgradeScreen() {
+  if (document.getElementById("upgrade-screen")) return;
+
+  const account = getAccount();
+  if (!account) {
+    alert('尚未登入，請重新登入');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const playerStats = await fetchPlayerStats(account);
+  if (!playerStats) return;
+
+  const upgradeStats = [
+    "Max Health", "Movement Speed", "Bullet Damage",
+    "Body Damage", "Bullet Frequency", "Health Regen", "Bullet Speed"
+  ];
+  const maxLevel = 7;
+
+  // 使用後端回傳的升級點數
+  let upgradePoints = playerStats.upgrade_points || 10;
+
+  // 初始化等級從後端數值四捨五入
+  const levels = {
+    "Max Health": Math.round(playerStats.max_health),
+    "Movement Speed": Math.round(playerStats.movement_speed),
+    "Bullet Damage": Math.round(playerStats.bullet_damage),
+    "Body Damage": Math.round(playerStats.body_damage),
+    "Bullet Frequency": Math.round(playerStats.bullet_frequency),
+    "Health Regen": Math.round(playerStats.health_regen),
+    "Bullet Speed": Math.round(playerStats.bullet_speed),
+  };
+
+  const upgradeHTML = document.createElement("div");
+  upgradeHTML.id = "upgrade-screen";
+  upgradeHTML.innerHTML = `
+    <style>
+    #upgrade-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: black;
+      color: white;
+      z-index: 9999;
+      font-family: sans-serif;
+      overflow-y: auto;
+    }
+
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background-color: #111;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    #Back_Button {
+      background-color: black;
+      color: white;
+      border: 1px solid white;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #upgrades {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px; /* 每項能力間距較近 */
+    }
+
+    .upgrade-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0;
+      background: transparent; /* 移除背景 */
+      box-shadow: none;        /* 移除陰影 */
+      border-radius: 0;
+      margin: 0;
+    }
+
+    .stat-name {
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .bar {
+      display: flex;
+      gap: 4px;
+    }
+
+    .segment, .empty-segment {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+    }
+
+    .segment {
+      background-color: yellow;
+    }
+
+    .empty-segment {
+      background-color: #333;
+    }
+
+    .upgrade-item button {
+      background-color: yellow;
+      color: black;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 16px;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .upgrade-item button:hover {
+      background-color: gold;
+    }
+  </style>
+
+    <div id="top-bar">
+      <button id="Back_Button">← 返回</button>
+      <div id="points">剩餘升級點數：<span id="point-count">${upgradePoints}</span></div>
+    </div>
+    <div id="upgrades"></div>
+    <audio id="levelup-sound" src="Upgrade.mp3" preload="auto"></audio>
+  `;
+
+  document.body.appendChild(upgradeHTML);
+
+  function playLevelUpSound() {
+    const audio = document.getElementById("levelup-sound");
+    audio.currentTime = 0;
+    audio.play();
+  }
+
+  function renderUpgrades() {
+    document.getElementById("point-count").textContent = upgradePoints;
+    const upgradesDiv = document.getElementById("upgrades");
+    upgradesDiv.innerHTML = "";
+
+    upgradeStats.forEach(stat => {
+      const container = document.createElement("div");
+      container.className = "upgrade-item";
+
+      const name = document.createElement("div");
+      name.className = "stat-name";
+      name.textContent = stat;
+
+      const bar = document.createElement("div");
+      bar.className = "bar";
+
+      for (let i = 0; i < maxLevel; i++) {
+        const seg = document.createElement("div");
+        seg.className = i < levels[stat] ? "segment" : "empty-segment";
+        bar.appendChild(seg);
+      }
+
+      const btn = document.createElement("button");
+      btn.textContent = "+";
+      btn.onclick = () => {
+        if (levels[stat] >= maxLevel) {
+          alert(`${stat} 已經滿等囉！`);
+          return;
+        }
+        if (upgradePoints <= 0) {
+          alert("升級點數不足！");
+          return;
+        }
+        levels[stat]++;
+        upgradePoints--;
+        playLevelUpSound();
+        renderUpgrades();
+      };
+
+      container.appendChild(name);
+      container.appendChild(bar);
+      container.appendChild(btn);
+      upgradesDiv.appendChild(container);
+    });
+  }
+
+  renderUpgrades();
+
+  document.getElementById("Back_Button").onclick = () => {
+    upgradeHTML.remove();
+  };
+}
+
+// 頁面載入時直接呼叫
+window.addEventListener('DOMContentLoaded', () => {
+  // 如果你想先不自動跳出升級畫面，這裡改成其他初始化
+  // showUpgradeScreen();
+});
