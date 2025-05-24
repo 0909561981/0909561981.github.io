@@ -41,6 +41,7 @@ async function main() {
     if (!playerData) throw new Error("玩家資料取得失敗");
 
     player = new Player(width / 2, height / 2, playerData.max_health, playerData.movement_speed, playerData.bullet_damage, playerData.body_damage, playerData.bullet_frequency, playerData.health_regen, playerData.bullet_speed);
+    for (let i = 0; i < 5; i++) {  wells_level[i] = playerData.lv + i;   }
   } catch (err) {
     console.error(err);
   }
@@ -121,7 +122,12 @@ function draw() {
     text("Game  Over", width / 2, height / 2);
     let btn = createButton("\u56de\u4e3b\u756b\u9762");
     btn.position(width / 2, (height*3) / 5);
-    btn.mousePressed(() => window.location.href = "home.html");
+    btn.mousePressed(async () => {
+      await saveRecord1(getAccount(), wells_level[0]);
+      await saveProgress();
+      const account = getAccount(); // 取得帳號
+      window.location.href = `home.html?account=${encodeURIComponent(account)}`;
+    });
     noLoop();
     return;
   }
@@ -274,10 +280,10 @@ function spawnNextFromWell(well) {
 
   if (type === "enemy") {
     let emoji = well.emoji;
-    enemies.push(new Enemy(pos.x, pos.y, emoji));
+    enemies.push(new Enemy(pos.x, pos.y, emoji,wells_level[well.index]));
   } else if (type === "boss") {
     let emoji = bossEmojis[well.index];
-    bosses.push(new Boss(pos.x, pos.y, emoji, well.index));
+    bosses.push(new Boss(pos.x, pos.y, emoji, well.index,wells_level[well.index]));
     console.log(emoji,"這個BOSS是lv",wells_level[well.index]);
   }
   
@@ -407,7 +413,8 @@ function togglePause() {
     bottomButtonDiv.style('justify-content', 'center');
 
     let saveButton = createButton('儲存進度');
-    saveButton.mousePressed(() => alert('儲存進度尚未實作'));
+    // saveButton.mousePressed(() => alert('儲存進度尚未實作'));
+    saveButton.mousePressed(saveProgress);
     saveButton.style('padding', '15px 30px');
     saveButton.style('font-size', '18px');
     bottomButtonDiv.child(saveButton);
@@ -433,6 +440,33 @@ function togglePause() {
   }
 }
 
+// 儲存進度
+async function saveProgress() {
+  const account = getAccount();
+  if (!account) {
+    alert("尚未登入，請重新登入");
+    window.location.href = 'login.html';
+    return;
+  }
+  if(player.hp<=0)  wells_level[0] = 1;
+  
+  try {
+    const response = await ApiService.postToBackend('/saveLevel', {
+      account: account,
+      lv: wells_level[0]
+    });
+
+    if (response.error) {
+      alert(`儲存失敗：${response.error}`);
+    } else {
+      alert("進度已成功儲存！");
+    }
+  } catch (error) {
+    alert("儲存時發生錯誤");
+    console.error(error);
+  }
+}
+
 // 繼續遊戲
 function resumeGame() {
   gamePaused = false;
@@ -444,5 +478,21 @@ function resumeGame() {
     let well = random(candidates);
     enemyID = setTimeout(() => spawnNextFromWell(well), 7000-time);
     time = Date.now()
+  }
+  console.log(playerData.max_health);
+}
+
+// 紀錄儲存
+async function saveRecord1(account, record1) {
+  try {
+    const response = await ApiService.postToBackend('/saveRecord1', { account, record1 });
+    if (response.error) {
+      alert(`儲存失敗：${response.error}`);
+    } else {
+      alert('歷史紀錄已成功儲存！');
+    }
+  } catch (e) {
+    alert('儲存歷史紀錄時發生錯誤');
+    console.error(e);
   }
 }

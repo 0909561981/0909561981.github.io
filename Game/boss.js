@@ -1,14 +1,14 @@
 class Boss {
   // 建立Boss的屬性
-  constructor(x, y, emoji = "👹", index) {
+  constructor(x, y, emoji = "👹", index, lv) {
     this.pos = createVector(x, y);
-    this.Max_Health = 3;
-    this.Movement_Speed = 1;
-    this.Bullet_Damage = 1;
-    this.Body_Damage = 1;
-    this.Bullet_Frequency = 180;
-    this.Health_Regen = 1;  // 沒有此功能
-    this.Bullet_Speed = 10;
+    this.Max_Health = 1.5 + lv / 5;
+    this.Movement_Speed = 0.5 + lv * 1;
+    this.Bullet_Damage = 0.5 + lv * 1;
+    this.Body_Damage = 0.5 + lv * 1;
+    this.Bullet_Frequency = 180 - lv * 1.5;
+    this.Health_Regen = 0.5 + lv * 1; // 沒有此功能
+    this.Bullet_Speed = 0.5 + lv * 1;
 
     this.index = index;
     this.cooldown = this.Bullet_Frequency; 

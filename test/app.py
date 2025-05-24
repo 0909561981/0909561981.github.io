@@ -13,6 +13,132 @@ db_config = {
     'database': 'gamedb'
 }
 
+@app.route('/saveRecord1', methods=['POST'])
+def save_record1():
+    data = request.get_json()
+    account = data.get('account')
+    record1 = data.get('record1')
+
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    # 找 user_id
+    cursor.execute("SELECT id FROM users WHERE account = %s", (account,))
+    result = cursor.fetchone()
+    if result is None:
+        return jsonify({"error": "找不到該帳號"}), 404
+
+    user_id = result[0]
+
+    try:
+        # 如果 user_id 沒在 player_record 就插入一筆空紀錄
+        cursor.execute("SELECT user_id FROM player_record WHERE user_id = %s", (user_id,))
+        if cursor.fetchone() is None:
+            cursor.execute("INSERT INTO player_record (user_id) VALUES (%s)", (user_id,))
+
+        # 更新 record1
+        cursor.execute("UPDATE player_record SET record1 = %s WHERE user_id = %s", (record1, user_id))
+        conn.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        print("❌ 儲存歷史紀錄失敗：", e)
+        return jsonify({"error": "儲存歷史紀錄時發生錯誤"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/saveLevel', methods=['POST'])
+def save_level():
+    data = request.get_json()
+    account = data.get('account')
+    lv = data.get('lv')
+
+    if not account or lv is None:
+        return jsonify({"error": "缺少必要參數"}), 400
+
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # 查找 user_id
+        cursor.execute("SELECT id FROM users WHERE account = %s", (account,))
+        result = cursor.fetchone()
+
+        if result is None:
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "找不到該帳號"}), 404
+
+        user_id = result[0]
+
+        # 更新等級，若無紀錄則插入
+        cursor.execute("""
+            INSERT INTO player_information (user_id, lv)
+            VALUES (%s, %s)
+            ON DUPLICATE KEY UPDATE lv = VALUES(lv)
+        """, (user_id, lv))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({"success": True})
+
+    except Exception as e:
+        print("❌ 儲存等級失敗：", e)
+        return jsonify({"error": "儲存等級時發生錯誤"}), 500
+
+@app.route('/savePlayerStats', methods=['POST'])
+def save_player_stats():
+    data = request.get_json()
+    account = data.get('account')
+    if not account:
+        return jsonify({'error': '缺少帳號'}), 400
+
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    try:
+        # 取得 user_id
+        cursor.execute("SELECT id FROM users WHERE account = %s", (account,))
+        user = cursor.fetchone()
+        if not user:
+            return jsonify({'error': '找不到帳號'}), 404
+        user_id = user[0]
+
+        # 更新 player_information 表
+        cursor.execute("""
+            UPDATE player_information SET
+                max_health = %s,
+                movement_speed = %s,
+                bullet_damage = %s,
+                body_damage = %s,
+                bullet_frequency = %s,
+                health_regen = %s,
+                bullet_speed = %s
+            WHERE user_id = %s
+        """, (
+            data.get('max_health'),
+            data.get('movement_speed'),
+            data.get('bullet_damage'),
+            data.get('body_damage'),
+            data.get('bullet_frequency'),
+            data.get('health_regen'),
+            data.get('bullet_speed'),
+            user_id
+        ))
+
+        conn.commit()
+        return jsonify({'message': '更新成功'})
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
 @app.route('/getPlayerStats', methods=['POST'])
 def get_player_stats():
     data = request.get_json()
@@ -63,7 +189,6 @@ def get_player_stats():
     finally:
         cursor.close()
         conn.close()
-
 
 @app.route('/getHistory', methods=['POST'])
 def get_history():

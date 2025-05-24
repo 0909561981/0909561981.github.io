@@ -7,21 +7,22 @@ function getAccount() {
   return account || '';
 }
 
-async function fetchPlayerStats(account) {
+async function fetchPlayerStats() {
+  const account = getAccount();  // 確保帳號存在
+  if (!account) {
+    alert("尚未登入，請重新登入");
+    window.location.href = 'login.html';
+    return null;
+  }
+
   try {
-    const response = await fetch('http://localhost:5000/getPlayerStats', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ account })
-    });
-    if (!response.ok) {
-      throw new Error(`伺服器回傳錯誤：${response.status}`);
-    }
-    const data = await response.json();
+    const data = await ApiService.postToBackend('/getPlayerStats', { account });
+
     if (data.error) {
       alert(data.error);
       return null;
     }
+
     return data;
   } catch (error) {
     alert('無法取得玩家數值，請稍後再試');
@@ -221,13 +222,44 @@ async function showUpgradeScreen() {
 
   renderUpgrades();
 
-  document.getElementById("Back_Button").onclick = () => {
+  document.getElementById("Back_Button").onclick = async () => {
+    const statKeyMap = {
+      "Max Health": "max_health",
+      "Movement Speed": "movement_speed",
+      "Bullet Damage": "bullet_damage",
+      "Body Damage": "body_damage",
+      "Bullet Frequency": "bullet_frequency",
+      "Health Regen": "health_regen",
+      "Bullet Speed": "bullet_speed",
+    };
+    for (const label in levels) {    playerData[statKeyMap[label]] = levels[label];   player[statKeyMap[label]] = levels[label];    }
+    await savePlayerStats(playerData);
     upgradeHTML.remove();
   };
 }
 
-// 頁面載入時直接呼叫
-window.addEventListener('DOMContentLoaded', () => {
-  // 如果你想先不自動跳出升級畫面，這裡改成其他初始化
-  // showUpgradeScreen();
-});
+async function savePlayerStats(stats) {
+  const account = getAccount();
+  if (!account) {
+    alert("尚未登入，請重新登入");
+    window.location.href = 'login.html';
+    return;
+  }
+
+  try {
+    const response = await ApiService.postToBackend('/savePlayerStats', {
+      account,
+      ...stats
+    });
+
+    if (response.error) {
+      alert(`儲存失敗：${response.error}`);
+    } else {
+      console.log("送出給後端的 stats：", { account, ...stats });
+      alert("玩家數值已成功儲存！");
+    }
+  } catch (error) {
+    alert("儲存玩家數值時發生錯誤，請稍後再試");
+    console.error(error);
+  }
+}

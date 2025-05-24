@@ -1,14 +1,14 @@
 class Enemy {
   // 建立Enemy的屬性
-  constructor(x, y, emoji = "😢") {
+  constructor(x, y, emoji = "😢",lv) {
     this.pos = createVector(x, y);
-    this.Max_Health = 1;
-    this.Movement_Speed = 1;
-    this.Bullet_Damage = 1;
-    this.Body_Damage = 1;
-    this.Bullet_Frequency = 180;
-    this.Health_Regen = 1; // 沒有此功能
-    this.Bullet_Speed = 1;
+    this.Max_Health = 0.5 + lv / 5;
+    this.Movement_Speed = 0.5 + lv * 1;
+    this.Bullet_Damage = 0.5 + lv * 1;
+    this.Body_Damage = 0.5 + lv * 1;
+    this.Bullet_Frequency = 180 - lv * 1;
+    this.Health_Regen = 0.5 + lv * 1; // 沒有此功能
+    this.Bullet_Speed = 0.5 + lv * 1;
 
     this.cooldown = this.Bullet_Frequency;
     this.moveDir = p5.Vector.random2D().mult(this.Movement_Speed);
