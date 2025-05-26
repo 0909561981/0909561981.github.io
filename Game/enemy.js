@@ -30,7 +30,6 @@ class Enemy {
             this.deduct_blood(-1 * game_facade.game.player.stats.Body_Damage);
             game_facade.game.player.deduct_blood(-1 * this.stats.Body_Damage);
         }
-        //console.log(player.pos.x, player.pos.y);
     }
     // 射擊子彈的速度跟方向
     attack() {
@@ -43,7 +42,7 @@ class Enemy {
     }
     // 射擊子彈的速度跟方向
     take_damage() {
-
+        // 現在變成去用子彈來判斷是否有傷害他人
     }
     // enemy扣血 
     deduct_blood(hurt) {
@@ -61,7 +60,7 @@ class Enemy {
     }
     // 升級數值
     upgrade_stats() {
-
+        // Enemy會升級都是因為死亡重新製作 => 不太會用到
     }
     // 展示Enemy的圖案跟血量
     display() {

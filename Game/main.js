@@ -55,6 +55,7 @@ async function main() {
     catch (err) {    console.error(err);       }
 }
 
+// 初始setup()
 function setup() {
     // 建立畫布(讓畫面適配瀏覽器)
     createCanvas(windowWidth, windowHeight);
@@ -66,12 +67,13 @@ function setup() {
         game_facade.game.setup();
 
         game_facade.factory.create_enemy(3,1);
-        game_facade.factory.spawn_next_enemy();
+        setTimeout(() => game_facade.factory.spawn_next_enemy(), 3000);
 
         // 其他初始化邏輯可以寫在這裡
     });
 }
 
+// 去繪圖 (會一直呼叫)
 function draw() {
     if(game_paused)     return;
 
@@ -94,19 +96,19 @@ function draw() {
     game_facade.game.map.tiles.forEach(ob => {
         push();
         textSize(48);
-        if (ob.type === "well") {
+        if (ob.type === TileType.WELL) {
             text("🗑", ob.pos.x, ob.pos.y);
             fill(255);
             textSize(12);
             text("Lv " + ob.lv, ob.pos.x, ob.pos.y + 30);
         }
-        else if (ob.type === "wall") {  
+        else if (ob.type === TileType.WALL) {  
             noStroke();   
             fill(255, 204, 0); 
             rectMode(CENTER);  
             rect(ob.pos.x, ob.pos.y, 40, 40); 
         }
-        else if (ob.type === "spike")  text("🌵", ob.pos.x, ob.pos.y);
+        else if (ob.type === TileType.SPIKE)  text("🌵", ob.pos.x, ob.pos.y);
         pop();
     });
 

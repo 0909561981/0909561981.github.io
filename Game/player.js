@@ -13,7 +13,8 @@ class Player {
         let next = this.pos.copy().add(vec.copy().mult(this.stats.Movement_Speed));
         let result = game_facade.game.map.is_walkable(next);
         if (result.walkable)    this.pos = next;
-        else if (result.type === "spike")   this.deduct_blood(-0.1);     
+        result = game_facade.game.map.tiles.find(tile => tile.pos.x === result.pos.x && tile.pos.y === result.pos.y);
+        if(result)      this.deduct_blood(result.take_damage(result.type));
     }
     // 射擊子彈的速度跟方向
     attack() {
@@ -28,7 +29,7 @@ class Player {
     }
     // 射擊子彈的速度跟方向
     take_damage() {
-
+        // 現在變成去用子彈來判斷是否有傷害他人
     }
     // Player扣血 
     deduct_blood(hurt) {
@@ -47,7 +48,7 @@ class Player {
     }
     // 升級數值
     upgrade_stats() {
-
+        // Upgrade.html 跟 Upgrade.js
     }
     // 展示Player的圖案跟血量
     display() {

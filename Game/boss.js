@@ -13,6 +13,7 @@ class Boss {
         this.emoji = emoji;
         this.index = index;
     }
+    
     // 更新Boss的位置跟方向跟冷卻時間
     move() {
         let next = this.pos.copy().add(this.moveDir);
@@ -43,7 +44,7 @@ class Boss {
     }
     // 射擊子彈的速度跟方向
     take_damage() {
-
+        // 現在變成去用子彈來判斷是否有傷害他人
     }
     // Boss扣血 
     deduct_blood(hurt) {
@@ -61,7 +62,7 @@ class Boss {
     }
     // 升級數值
     upgrade_stats() {
-
+        // Enemy會升級都是因為死亡重新製作 => 不太會用到
     }
     // 展示Boss的圖案跟血量
     display() {

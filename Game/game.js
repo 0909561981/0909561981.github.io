@@ -29,8 +29,4 @@ class Game {
         // 建立遊戲畫面 ( 牆壁 井 障礙物 )
         this.map.build();
     }
-    
-    print() {
-        console.log("123");
-    }
 }
