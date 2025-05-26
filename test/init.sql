@@ -64,10 +64,10 @@ CREATE TRIGGER after_player_record_update
 BEFORE UPDATE ON player_record
 FOR EACH ROW
 BEGIN
-  IF NEW.record1 IS NOT NULL AND NEW.record1 <> OLD.record1 THEN
+  IF NEW.record1 IS NOT NULL THEN
     SET NEW.record3 = OLD.record2;
     SET NEW.record2 = OLD.record1;
-    -- NEW.record1 已由外部設定，不需要改
+    -- NEW.record1 保留原值
   END IF;
 END;
 //

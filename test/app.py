@@ -173,7 +173,7 @@ def get_player_stats():
         ranking_lv = rank['lv'] if rank else 0
 
         # 計算升級點數 = 7屬性和 + (ranking_lv / 5) + 1
-        upgrade_points = 7-sum(stats.values()) + (ranking_lv / 5) + 1
+        upgrade_points = sum(stats.values()) - 7 + (int)(ranking_lv / 5) + 1
 
         # 回傳結果
         response = {

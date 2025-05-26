@@ -11,18 +11,13 @@ class Player {
     // 更新Player的位置跟冷卻時間
     move(vec) {
         let next = this.pos.copy().add(vec.copy().mult(this.stats.Movement_Speed));
-        let result = game_facade.game.map.is_walkable(next);
-        if (result.walkable)    this.pos = next;
-        else if (result.type === "spike")   this.deduct_blood(-0.1);     
+        if (!collidesWithObstacle(next, true))    this.pos = next;
     }
     // 射擊子彈的速度跟方向
     attack() {
         if (this.cooldown > 0)    this.cooldown--;
-    }
-    // 射擊子彈的速度跟方向
-    shoot(vec) {
         if (this.cooldown <= 0) {
-            game_facade.game.bullets.push(new Bullet(this.pos.x, this.pos.y, vec.copy().normalize().mult(this.stats.Bullet_Speed), "player", this.stats.Bullet_Damage));
+            bullets.push(new Bullet(this.pos.x, this.pos.y, vec.copy().normalize().mult(this.stats.Bullet_Speed), "player", this.stats.Bullet_Damage));
             this.cooldown = this.stats.Bullet_Frequency;
         }
     }
@@ -30,20 +25,10 @@ class Player {
     take_damage() {
 
     }
-    // Player扣血 
-    deduct_blood(hurt) {
-        this.hp += hurt;
-    }
-    // 判斷是否還活著
-    is_live() {
-        // 判斷是否還有血量  =>  GameOver
-        if(this.hp<=0)        return false;    
-        return true;
-    }
     // 回復血量
     recovery() {
-        if (this.hp<=this.stats.Max_Health)     this.hp += this.stats.Health_Regen;
-        if (this.hp>=this.stats.Max_Health)     this.hp = this.stats.Max_Health;
+        if (player.hp<=player.Max_Health)     player.hp += this.Health_Regen;
+        if (player.hp>=player.Max_Health)     player.hp = this.Max_Health;
     }
     // 升級數值
     upgrade_stats() {
@@ -57,6 +42,6 @@ class Player {
         fill(100);
         rect(this.pos.x - 40 / 2, this.pos.y - 30, 40, 5);
         fill(255, 0, 0);
-        rect(this.pos.x - 40 / 2, this.pos.y - 30, (40*this.hp)/this.stats.Max_Health, 5);
+        rect(this.pos.x - 40 / 2, this.pos.y - 30, (40*this.hp)/this.Max_Health, 5);
     }
 }

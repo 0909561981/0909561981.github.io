@@ -1,34 +1,48 @@
 class Bullet {
-  // 建立Bullet的屬性
-  constructor(x, y, vel, type, damage) {
-    this.pos = createVector(x, y);
-    this.vel = vel; // 速度
-    this.type = type;
-    this.Bullet_Damage = damage
-  }
+    // 建立Bullet的屬性
+    constructor(x, y, vel, type, damage) {
+        this.pos = createVector(x, y);
+        this.vel = vel; // 速度
+        this.type = type;
+        this.Bullet_Damage = damage;
+    }
 
-  // 更新Bullet的位置跟方向跟冷卻時間
-  update() {
-    this.pos.add(this.vel);
-  }
+    // 更新Bullet的位置
+    move(player) {
+        let next = this.pos.copy().add(this.vel);
+        // 是否撞到障礙物
+        let result = game_facade.game.map.is_walkable(next);
+        if (result.walkable)    this.pos = next;
+        else        return false;
 
-  // 展示Bullet的圖案跟血量
-  display() {
-    fill(this.type === "player" ? "yellow" : "red");
-    ellipse(this.pos.x, this.pos.y, 10);
-  }
-
-  // 判斷子彈是否超出了螢幕邊界
-  offscreen() {
-    return (this.pos.x < 0 || this.pos.x > width || this.pos.y < 0 || this.pos.y > height);
-  }
-
-  // 判斷子彈是否與目標發生碰撞
-  hits(target) {
-    return dist(this.pos.x, this.pos.y, target.pos.x, target.pos.y) < 25;
-  }
-}
-
-function bulletHitsObstacle(bullet) {
-  return obstacles.some(ob => dist(bullet.pos.x, bullet.pos.y, ob.pos.x, ob.pos.y) < 25);
+        // 是否撞到人
+        if(this.type === "player") {
+            for (let enemy of game_facade.game.enemies) {
+                if (this.bool_hit(enemy)) {
+                    // 扣血 and 讓子彈消失
+                    enemy.deduct_blood(-1 * this.Bullet_Damage);
+                    return false;
+                }
+            }
+        }
+        else if(this.type === "enemy" || this.type === "boss") {
+            if (this.bool_hit(game_facade.game.player)) {
+                
+                // 扣血 and 讓子彈消失
+                game_facade.game.player.deduct_blood(-1 * this.Bullet_Damage);
+                return false;
+            }
+        }
+        return true;
+    }
+    // 判斷子彈是否與目標發生碰撞
+    bool_hit(target) {
+        if (!target || !target.pos) return false;
+        return dist(this.pos.x, this.pos.y, target.pos.x, target.pos.y) < 25;
+    }
+    // 展示Bullet的圖案跟血量
+    display() {
+        fill(this.type === "player" ? "yellow" : "red");
+        ellipse(this.pos.x, this.pos.y, 10);
+    }
 }

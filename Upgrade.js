@@ -232,7 +232,7 @@ async function showUpgradeScreen() {
       "Health Regen": "health_regen",
       "Bullet Speed": "bullet_speed",
     };
-    for (const label in levels) {    playerData[statKeyMap[label]] = levels[label];   player[statKeyMap[label]] = levels[label];    }
+    for (const label in levels) {    playerData[statKeyMap[label]] = levels[label];   game_facade.game.player[statKeyMap[label]] = levels[label];    }
     await savePlayerStats(playerData);
     upgradeHTML.remove();
   };
