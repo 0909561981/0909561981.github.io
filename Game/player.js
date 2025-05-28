@@ -27,10 +27,6 @@ class Player {
             this.cooldown = this.stats.Bullet_Frequency;
         }
     }
-    // 射擊子彈的速度跟方向
-    take_damage() {
-        // 現在變成去用子彈來判斷是否有傷害他人
-    }
     // Player扣血 
     deduct_blood(hurt) {
         this.hp += hurt;
@@ -45,10 +41,6 @@ class Player {
     recovery() {
         if (this.hp<=this.stats.Max_Health)     this.hp += this.stats.Health_Regen;
         if (this.hp>=this.stats.Max_Health)     this.hp = this.stats.Max_Health;
-    }
-    // 升級數值
-    upgrade_stats() {
-        // Upgrade.html 跟 Upgrade.js
     }
     // 展示Player的圖案跟血量
     display() {

@@ -1,8 +1,4 @@
 class Enemy_Factory {
-    // 建立game_facade的屬性
-    constructor() {
-
-    }
 
     // 初始生成怪物
     create_enemy(num_enemy, num_boss) {

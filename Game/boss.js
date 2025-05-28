@@ -42,10 +42,6 @@ class Boss {
             this.cooldown = this.stats.Bullet_Frequency;
         }
     }
-    // 射擊子彈的速度跟方向
-    take_damage() {
-        // 現在變成去用子彈來判斷是否有傷害他人
-    }
     // Boss扣血 
     deduct_blood(hurt) {
         this.hp += hurt;
@@ -55,14 +51,6 @@ class Boss {
         // 判斷是否還有血量  =>  GameOver
         if(this.hp<=0)        return false;    
         return true;
-    }
-    // 回復血量
-    recovery() {
-        // 暫無此功能
-    }
-    // 升級數值
-    upgrade_stats() {
-        // Enemy會升級都是因為死亡重新製作 => 不太會用到
     }
     // 展示Boss的圖案跟血量
     display() {

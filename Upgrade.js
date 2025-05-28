@@ -51,8 +51,9 @@ async function showUpgradeScreen() {
   const maxLevel = 7;
 
   // 使用後端回傳的升級點數
-  let upgradePoints = playerStats.upgrade_points || 10;
-
+  let upgradePoints = 7-(playerStats.max_health+playerStats.movement_speed+playerStats.bullet_damage+playerStats.body_damage+playerStats.bullet_frequency+playerStats.health_regen+playerStats.bullet_speed)+ (int)(playerStats.ranking_lv / 5) + 1;
+  if(upgradePoints<0)
+    upgradePoints=0;
   // 初始化等級從後端數值四捨五入
   const levels = {
     "Max Health": Math.round(playerStats.max_health),
