@@ -185,7 +185,7 @@ def get_player_stats():
             return jsonify({'error': '找不到玩家資訊'}), 404
 
         # 從 ranking_list 撈 lv
-        cursor.execute("SELECT lv FROM ranking_list WHERE user_id = %s", (user_id,))
+        cursor.execute("SELECT lv FROM player_information WHERE user_id = %s", (user_id,))
         rank = cursor.fetchone()
         ranking_lv = rank['lv'] if rank else 0
 
