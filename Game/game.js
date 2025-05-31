@@ -186,30 +186,30 @@ class Game {
 
         if(this.player.hp<=0) {
             this.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv = 1;
-            this.player.max_health = 1;
-            this.player.movement_speed = 1;
-            this.player.bullet_damage = 1;
-            this.player.body_damage = 1;
-            this.player.bullet_frequency = 1;
-            this.player.health_regen = 1;
-            this.player.bullet_speed = 1;
+            this.player.stats.Max_Health = 1;
+            this.player.stats.Movement_Speed = 1;
+            this.player.stats.Bullet_Damage = 1;
+            this.player.stats.Body_Damage = 1;
+            this.player.stats.Bullet_Frequency = 1;
+            this.player.stats.Health_Regen = 1;
+            this.player.stats.Bullet_Speed = 1;
         }
         
         try {
             const response = await ApiService.postToBackend('/saveLevel', {
                 account: account,
                 lv: this.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv,
-                max_health: this.player.max_health,
-                movement_speed: this.player.movement_speed,
-                bullet_damage: this.player.bullet_damage,
-                body_damage: this.player.body_damage,
-                bullet_frequency: this.player.bullet_frequency,
-                health_regen: this.player.health_regen,
-                bullet_speed: this.player.bullet_speed
+                max_health: this.player.stats.Max_Health,
+                movement_speed: this.player.stats.Movement_Speed,
+                bullet_damage: this.player.stats.Bullet_Damage,
+                body_damage: this.player.stats.Body_Damage,
+                bullet_frequency: this.player.stats.Bullet_Frequency,
+                health_regen: this.player.stats.Health_Regen,
+                bullet_speed: this.player.stats.Bullet_Speed
             });
 
             if (response.error)     alert(`儲存失敗：${response.error}`);
-            //else                    alert("進度已成功儲存！");
+            else if(this.player.hp>0)   alert("進度已成功儲存！");
         }
         catch (error) {
             alert("儲存時發生錯誤");
