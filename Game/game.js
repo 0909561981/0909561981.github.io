@@ -184,18 +184,32 @@ class Game {
             return;
         }
 
-        if(this.player.hp<=0)   this.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv = 1;
+        if(this.player.hp<=0) {
+            this.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv = 1;
+            this.player.max_health = 1;
+            this.player.movement_speed = 1;
+            this.player.bullet_damage = 1;
+            this.player.body_damage = 1;
+            this.player.bullet_frequency = 1;
+            this.player.health_regen = 1;
+            this.player.bullet_speed = 1;
+        }
         
         try {
             const response = await ApiService.postToBackend('/saveLevel', {
-            account: account,
-            lv: this.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv
+                account: account,
+                lv: this.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv,
+                max_health: this.player.max_health,
+                movement_speed: this.player.movement_speed,
+                bullet_damage: this.player.bullet_damage,
+                body_damage: this.player.body_damage,
+                bullet_frequency: this.player.bullet_frequency,
+                health_regen: this.player.health_regen,
+                bullet_speed: this.player.bullet_speed
             });
 
             if (response.error)     alert(`儲存失敗：${response.error}`);
             //else                    alert("進度已成功儲存！");
-            
-            window.location.href = `home.html?account=${encodeURIComponent(account)}`;
         }
         catch (error) {
             alert("儲存時發生錯誤");

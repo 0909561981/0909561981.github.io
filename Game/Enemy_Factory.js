@@ -35,7 +35,7 @@ class Enemy_Factory {
             }
             // 冷卻後再隨機從其他井繼續生成
             let nextCandidates = game_facade.game.map.tiles.filter(t => t.type === TileType.WELL && t.queue.length > 0);
-            if (nextCandidates.length > 0) {
+            if (nextCandidates.length > 0 && game_paused == false) {
                 time = Date.now()
                 enemyID = setTimeout(() => this.spawn_next_enemy(), 7000);
             }

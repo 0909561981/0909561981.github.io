@@ -52,8 +52,16 @@ def save_level():
     data = request.get_json()
     account = data.get('account')
     lv = data.get('lv')
+    max_health = data.get('max_health')
+    movement_speed = data.get('movement_speed')
+    bullet_damage = data.get('bullet_damage')
+    body_damage = data.get('body_damage')
+    bullet_frequency = data.get('bullet_frequency')
+    health_regen = data.get('health_regen')
+    bullet_speed = data.get('bullet_speed')
 
-    if not account or lv is None:
+    # 檢查必要參數
+    if not account or lv is None or None in (max_health, movement_speed, bullet_damage, body_damage, bullet_frequency, health_regen, bullet_speed):
         return jsonify({"error": "缺少必要參數"}), 400
 
     try:
@@ -71,12 +79,21 @@ def save_level():
 
         user_id = result[0]
 
-        # 更新等級，若無紀錄則插入
+        # 一次更新所有欄位
         cursor.execute("""
-            INSERT INTO player_information (user_id, lv)
-            VALUES (%s, %s)
-            ON DUPLICATE KEY UPDATE lv = VALUES(lv)
-        """, (user_id, lv))
+            INSERT INTO player_information (
+                user_id, max_health, movement_speed, bullet_damage, body_damage, bullet_frequency, health_regen, bullet_speed, lv
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE 
+                max_health = VALUES(max_health),
+                movement_speed = VALUES(movement_speed),
+                bullet_damage = VALUES(bullet_damage),
+                body_damage = VALUES(body_damage),
+                bullet_frequency = VALUES(bullet_frequency),
+                health_regen = VALUES(health_regen),
+                bullet_speed = VALUES(bullet_speed),
+                lv = VALUES(lv)
+        """, (user_id, max_health, movement_speed, bullet_damage, body_damage, bullet_frequency, health_regen, bullet_speed, lv))
 
         conn.commit()
         cursor.close()

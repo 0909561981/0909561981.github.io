@@ -10,7 +10,7 @@ class Game_Facade {
         this.game.setup();
 
         this.factory.create_enemy(3,1);
-        setTimeout(() => this.factory.spawn_next_enemy(), 3000);
+        enemyID = setTimeout(() => this.factory.spawn_next_enemy(), 3000);
     }
 
     // draw()

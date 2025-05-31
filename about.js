@@ -21,19 +21,28 @@ function about() {
           </button>
         </div>
         <p class="text-lg text-gray-700">
-          歡迎來到「無盡射手」！這是一款使用 <code>p5.js</code> 和 <code>v5.js</code> 製作的手機友善射擊遊戲。
+          歡迎來到「無盡射手」！這是一款使用 <code>p5.js</code> 製作的手機友善射擊遊戲。
         </p>
         <ul class="list-disc list-inside text-gray-700 text-base space-y-2">
           <li>操控可愛的笑臉角色，用虛擬搖桿在戰場中穿梭、射擊敵人。</li>
           <li>敵人會從五口井中隨機冒出，每口井都有自己風格與等級！</li>
           <li>30 秒後，強力 Boss 降臨，擊敗它就能升級井口、進入更高難度！</li>
-          <li>內含暫停功能、升級系統、排行榜（施工中）與搞笑小彩蛋！</li>
+          <li>內含暫停功能、升級系統、排行榜與搞笑小彩蛋！</li>
         </ul>
         <p class="text-lg text-gray-700">
-          遊戲以模組化方式開發，將不同元件如玩家、敵人、子彈、搖桿、障礙物等拆分為 JavaScript 檔案，便於維護與擴充。
+          遊戲以模組化方式開發，將不同元件如玩家、敵人、子彈、搖桿、障礙物等拆分為不同的class檔案，便於維護與擴充。
         </p>
         <p class="text-lg text-gray-700">
-          此專案由 <span class="font-semibold text-purple-600">童錦程</span> 製作，初衷是學習 OOP 與製作一款有趣又不失挑戰的瀏覽器遊戲。
+          此專案由
+          <span class="font-semibold text-purple-600">
+            <br>
+             -  41047049S 李邦安<br>
+             -  41047004S 鄭琮祐<br>
+             -  41047017S 許哲葦<br>
+             -  41047018S 胡崇恩<br>
+             -  41047036S 劉庭瑄<br>
+          </span>
+          製作，初衷是學習 OOP 與製作一款有趣又不失挑戰的瀏覽器遊戲。
         </p>
       </div>
     </div>
