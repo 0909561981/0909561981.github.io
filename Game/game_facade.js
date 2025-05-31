@@ -5,176 +5,94 @@ class Game_Facade {
         this.factory = new Enemy_Factory();
     }    
 
-    // GameOver畫面
-    Game_Over(){
-        pauseButton.hide();
-        textSize(48);
-        text("Game  Over", width / 2, height / 2);
-        let btn = createButton("\u56de\u4e3b\u756b\u9762");
-        btn.position(width / 2, (height*3) / 5);
-        btn.mousePressed(async () => {
-            const account = getAccount();
-            console.log( game_facade.game.map.tiles.filter(t => t.type === TileType.WELL).find(t => t.index === 0).lv);
-            await this.saveRecord1(account, game_facade.game.map.tiles.filter(t => t.type === TileType.WELL).find(t => t.index === 0).lv);
-            await this.saveProgress();
-            
-            window.location.href = `home.html?account=${encodeURIComponent(account)}`;
+    // 遊戲初始化
+    setup() {
+        this.game.setup();
+
+        this.factory.create_enemy(3,1);
+        setTimeout(() => this.factory.spawn_next_enemy(), 3000);
+    }
+
+    // draw()
+    draw() {
+        if(game_paused)     return;
+    
+        // 背景設為黑色
+        background(0);
+
+        // 詳情請查看Joystick.js
+        moveJoystick.display();
+        shootJoystick.display();
+        moveJoystick.update();
+        shootJoystick.update();
+        moveVector = moveJoystick.getDirection();
+        shootVector = shootJoystick.getDirection();
+
+        // 畫障礙物款式
+        this.game.map.tiles.forEach(ob => {
+            push();
+            textSize(48);
+            if (ob.type === TileType.WELL) {
+                text("🗑", ob.pos.x, ob.pos.y);
+                fill(255);
+                textSize(12);
+                text("Lv " + ob.lv, ob.pos.x, ob.pos.y + 30);
+            }
+            else if (ob.type === TileType.WALL) {  
+                noStroke();   
+                fill(255, 204, 0); 
+                rectMode(CENTER);  
+                rect(ob.pos.x, ob.pos.y, 40, 40); 
+            }
+            else if (ob.type === TileType.SPIKE)  text("🌵", ob.pos.x, ob.pos.y);
+            pop();
         });
-        noLoop();
-    }
 
-    // 繼續遊戲
-    resumeGame() {
-        game_paused = false;
-        if (pauseMenu) pauseMenu.remove();
-        pauseButton.show();
-        
-        
-        enemyID = setTimeout(() => this.factory.spawn_next_enemy(), 7000-time);
-        time = Date.now()
-    }
-
-    // 打完Boss後整理關卡 
-    reload(index) {
-        clearTimeout(enemyID);
-        let candidates = game_facade.game.map.tiles.filter(t => t.type === TileType.WELL)
-        candidates.forEach(well => {
-            candidates.queue = [];
-        });
-        game_facade.game.enemies = [];
-        game_facade.game.bullets = [];
-        
-        // 刷新井的等級跟敵人
-        let base = game_facade.game.map.tiles.filter(t => t.type === TileType.WELL).find(t => t.index === index)
-        let lv = base.lv;
-        candidates.forEach(well => {
-            well.lv = lv + well.index;
-        });
-        
-        // 重新生成enemy跟boss
-        game_facade.factory.create_enemy(3,1);
-        enemyID = setTimeout(() => game_facade.factory.spawn_next_enemy(), 3000);
-    }
-
-    // 暫停頁面
-    togglePause() {
-        game_paused = !game_paused;
-        if (game_paused) {
-            pauseButton.hide();
-            clearTimeout(enemyID);
-            time = Date.now() - time;
-
-            pauseMenu = createElement('div');
-            pauseMenu.style('background', 'rgba(0,0,0,0.8)');
-            pauseMenu.style('padding', '20px');
-            pauseMenu.style('border-radius', '10px');
-            pauseMenu.style('color', 'white');
-            pauseMenu.style('text-align', 'center');
-            pauseMenu.style('width', '100%');
-            pauseMenu.style('height', '100%');
-            pauseMenu.style('position', 'absolute');
-            pauseMenu.style('top', '0');
-            pauseMenu.style('left', '0');
-            pauseMenu.style('display', 'flex');
-            pauseMenu.style('flex-direction', 'column');
-            pauseMenu.style('justify-content', 'center');
-            pauseMenu.style('align-items', 'center');
-
-            let title = createElement('h2', '遊戲暫停');
-            title.style('margin-bottom', '30px');
-            pauseMenu.child(title);
-
-            let topButtonDiv = createElement('div');
-            topButtonDiv.style('display', 'flex');
-            topButtonDiv.style('gap', '20px');
-            topButtonDiv.style('justify-content', 'center');
-
-            let resumeButton = createButton('繼續遊戲');
-            resumeButton.mousePressed(() => game_facade.resumeGame());
-            resumeButton.style('padding', '15px 30px');
-            resumeButton.style('font-size', '18px');
-            topButtonDiv.child(resumeButton);
-
-            let upgradeButton = createButton('升級能力');
-            upgradeButton.mousePressed(() => showUpgradeScreen());
-            upgradeButton.style('padding', '15px 30px');
-            upgradeButton.style('font-size', '18px');
-            topButtonDiv.child(upgradeButton);
-
-            pauseMenu.child(topButtonDiv);
-
-            let bottomButtonDiv = createElement('div');
-            bottomButtonDiv.style('display', 'flex');
-            bottomButtonDiv.style('gap', '20px');
-            bottomButtonDiv.style('justify-content', 'center');
-
-            let saveButton = createButton('儲存進度');
-            // saveButton.mousePressed(() => alert('儲存進度尚未實作'));
-            saveButton.mousePressed(() => game_facade.saveProgress());
-            saveButton.style('padding', '15px 30px');
-            saveButton.style('font-size', '18px');
-            bottomButtonDiv.child(saveButton);
-
-            let exitButton = createButton('離開遊戲');
-            exitButton.mousePressed(() => {
-            const account = getAccount();
-            location.href = `home.html?account=${encodeURIComponent(account)}`;
-            });
-            exitButton.style('padding', '15px 30px');
-            exitButton.style('font-size', '18px');
-            bottomButtonDiv.child(exitButton);
-
-            let helpButton = createButton('說明');
-            helpButton.mousePressed(() => about());
-            helpButton.style('padding', '15px 30px');
-            helpButton.style('font-size', '18px');
-            bottomButtonDiv.child(helpButton);
-
-            pauseMenu.child(bottomButtonDiv);
-
-            document.body.appendChild(pauseMenu.elt);
-        }
-    }    
-
-
-    // 歷史紀錄登記
-    async saveRecord1(account, record1) {
-        try {
-            const response = await ApiService.postToBackend('/saveRecord1', { account, record1 });
-            if (response.error)     alert(`儲存失敗：${response.error}`); 
-            //else                    alert('歷史紀錄已成功儲存！');
-        } 
-        catch (e) {
-            alert('儲存歷史紀錄時發生錯誤');
-            console.error(e);
-        }
-    }
-
-    // 暫時儲存紀錄
-    async saveProgress() {
-        const account = getAccount();
-        if (!account) {
-            alert("尚未登入，請重新登入");
-            window.location.href = 'login.html';
+        // Player移動
+        if(!this.game.player.is_live()) {
+            this.game.Game_Over();
             return;
         }
+        this.game.player.move(moveVector);
+        this.game.player.attack(moveVector);
+        this.game.player.display();
 
-        if(game_facade.game.player.hp<=0)   game_facade.game.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv = 1;
-        
-        try {
-            const response = await ApiService.postToBackend('/saveLevel', {
-            account: account,
-            lv: game_facade.game.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv
+        // Player攻擊
+        this.game.player.attack();
+        if (shootVector.mag() > 0)   this.game.player.shoot(shootVector);
+
+        // Player回血
+        this.game.player.recovery();
+
+        // Enemies移動
+        if(this.game.enemies) {
+            let death = this.game.enemies.filter(enemy => !enemy.is_live());
+            death.forEach(enemy => {
+                let bossIndex = bossEmojis.indexOf(enemy.emoji);
+                if (bossIndex !== -1) {
+                    this.game.reload(bossIndex);
+                }
             });
 
-            if (response.error)     alert(`儲存失敗：${response.error}`);
-            //else                    alert("進度已成功儲存！");
-            
-            window.location.href = `home.html?account=${encodeURIComponent(account)}`;
+            this.game.enemies = this.game.enemies.filter(enemy => enemy.is_live());   // 判斷是否還活著
+            this.game.enemies.forEach(enemy => {
+                enemy.move();
+                enemy.attack();
+                enemy.display();
+            });
         }
-        catch (error) {
-            alert("儲存時發生錯誤");
-            console.error(error);
+        
+        // 子彈移動
+        for (let i = this.game.bullets.length - 1; i >= 0; i--) {
+            let b = this.game.bullets[i];
+
+            // 若移動後不合法（例如撞牆）或已出畫面，移除
+            if (!b.move(b.vel)) {
+                this.game.bullets.splice(i, 1);
+                continue;
+            }
+
+            b.display();
         }
-    }
+    }       
 }

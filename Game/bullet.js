@@ -1,15 +1,19 @@
 class Bullet {
     // 建立Bullet的屬性
-    constructor(x, y, vel, type, damage) {
+    constructor(x, y, vel, type, damage, lv = 1) {
         this.pos = createVector(x, y);
         this.vel = vel; // 速度
         this.type = type;
         this.Bullet_Damage = damage;
+        
+        this.range = Math.sqrt(width**2 + height**2) / lv; // 有效射程(飛行距離)
+        this.mileage = 0; // 目前飛了多少里程(距離)
     }
 
     // 更新Bullet的位置
     move(player) {
         let next = this.pos.copy().add(this.vel);
+        this.mileage = this.mileage + this.vel.mag();
         // 是否撞到障礙物
         let result = game_facade.game.map.is_walkable(next);
         if (result.walkable)    this.pos = next;
@@ -32,6 +36,11 @@ class Bullet {
                 game_facade.game.player.deduct_blood(-1 * this.Bullet_Damage);
                 return false;
             }
+        }
+
+        // 是否超出有效射程距離
+        if(this.mileage>=this.range) {
+            return false;
         }
         return true;
     }

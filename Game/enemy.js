@@ -4,6 +4,7 @@ class Enemy {
         this.pos = createVector(x, y);
         this.stats = new Stats("enemy", lv, lv, lv, lv, lv, lv, lv);
 
+        this.lv = lv;
         this.cooldown = this.stats.Bullet_Frequency;
         this.hp = this.stats.Max_Health;
 
@@ -36,7 +37,7 @@ class Enemy {
         if (this.cooldown > 0)    this.cooldown--;
         if (this.cooldown <= 0) {
             let dir = p5.Vector.sub(game_facade.game.player.pos, this.pos).normalize();
-            game_facade.game.bullets.push(new Bullet(this.pos.x, this.pos.y, dir.mult(this.stats.Bullet_Speed), "enemy", this.stats.Bullet_Damage));
+            game_facade.game.bullets.push(new Bullet(this.pos.x, this.pos.y, dir.mult(this.stats.Bullet_Speed), "enemy", this.stats.Bullet_Damage, this.lv));
             this.cooldown = this.stats.Bullet_Frequency;
         }
     }

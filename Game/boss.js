@@ -4,6 +4,7 @@ class Boss {
         this.pos = createVector(x, y);
         this.stats = new Stats("boss", lv, lv, lv, lv, lv, lv, lv);
 
+        this.lv = lv;
         this.cooldown = this.stats.Bullet_Frequency;
         this.hp = this.stats.Max_Health;
 
@@ -37,8 +38,8 @@ class Boss {
         if (this.cooldown <= 0) {
             let dir1 = p5.Vector.sub(game_facade.game.player.pos, this.pos).normalize().rotate(PI / 12);
             let dir2 = p5.Vector.sub(game_facade.game.player.pos, this.pos).normalize().rotate(-PI / 12);
-            game_facade.game.bullets.push(new Bullet(this.pos.x, this.pos.y, dir1.mult(this.stats.Bullet_Speed), "enemy", this.stats.Bullet_Damage));
-            game_facade.game.bullets.push(new Bullet(this.pos.x, this.pos.y, dir2.mult(this.stats.Bullet_Speed), "enemy", this.stats.Bullet_Damage));
+            game_facade.game.bullets.push(new Bullet(this.pos.x, this.pos.y, dir1.mult(this.stats.Bullet_Speed), "enemy", this.stats.Bullet_Damage, this.lv));
+            game_facade.game.bullets.push(new Bullet(this.pos.x, this.pos.y, dir2.mult(this.stats.Bullet_Speed), "enemy", this.stats.Bullet_Damage, this.lv));
             this.cooldown = this.stats.Bullet_Frequency;
         }
     }
