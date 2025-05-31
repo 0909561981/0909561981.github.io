@@ -26,7 +26,7 @@ class Stats {
             this.Body_Damage = 0.5 + Body_Damage * 0.5;
             this.Bullet_Frequency = 30 - Bullet_Frequency * 1.5;
             this.Health_Regen = Health_Regen * 0.01;
-            this.Bullet_Speed = 8 + Bullet_Speed * 1.1;
+            this.Bullet_Speed = 9 + Bullet_Speed * 1.0;
         }
     }
 }

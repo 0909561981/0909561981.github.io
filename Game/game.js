@@ -186,26 +186,26 @@ class Game {
 
         if(this.player.hp<=0) {
             this.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv = 1;
-            this.player.stats.Max_Health = 1;
-            this.player.stats.Movement_Speed = 1;
+            this.player.stats.Max_Health = 3;
+            this.player.stats.Movement_Speed = 7.5;
             this.player.stats.Bullet_Damage = 1;
             this.player.stats.Body_Damage = 1;
-            this.player.stats.Bullet_Frequency = 1;
-            this.player.stats.Health_Regen = 1;
-            this.player.stats.Bullet_Speed = 1;
+            this.player.stats.Bullet_Frequency = 28.5;
+            this.player.stats.Health_Regen = 0.01;
+            this.player.stats.Bullet_Speed = 10;
         }
         
         try {
             const response = await ApiService.postToBackend('/saveLevel', {
                 account: account,
                 lv: this.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv,
-                max_health: this.player.stats.Max_Health,
-                movement_speed: this.player.stats.Movement_Speed,
-                bullet_damage: this.player.stats.Bullet_Damage,
-                body_damage: this.player.stats.Body_Damage,
-                bullet_frequency: this.player.stats.Bullet_Frequency,
-                health_regen: this.player.stats.Health_Regen,
-                bullet_speed: this.player.stats.Bullet_Speed
+                max_health: (this.player.stats.Max_Health-1.8) / 1.2,
+                movement_speed: (this.player.stats.Movement_Speed-6) / 1.5,
+                bullet_damage: (this.player.stats.Bullet_Damage) / 1,
+                body_damage: (this.player.stats.Body_Damage-0.5) / 0.5,
+                bullet_frequency: (30-this.player.stats.Bullet_Frequency) / 1.5,
+                health_regen: (this.player.stats.Health_Regen) / 0.01,
+                bullet_speed: (this.player.stats.Bullet_Speed-9) / 1
             });
 
             if (response.error)     alert(`儲存失敗：${response.error}`);

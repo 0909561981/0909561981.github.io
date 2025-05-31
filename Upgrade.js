@@ -233,8 +233,17 @@ async function showUpgradeScreen() {
       "Health Regen": "health_regen",
       "Bullet Speed": "bullet_speed",
     };
-    for (const label in levels) {    playerData[statKeyMap[label]] = levels[label];   game_facade.game.player[statKeyMap[label]] = levels[label];    }
+    for (const label in levels)    playerData[statKeyMap[label]] = levels[label];
     await savePlayerStats(playerData);
+
+    game_facade.game.player.stats.Max_Health = 1.8 + playerData.max_health * 1.2;
+    game_facade.game.player.stats.Movement_Speed = 6 + playerData.movement_speed * 1.5;
+    game_facade.game.player.stats.Bullet_Damage = playerData.bullet_damage * 1;
+    game_facade.game.player.stats.Body_Damage = 0.5 + playerData.body_damage * 0.5;
+    game_facade.game.player.stats.Bullet_Frequency = 30 - playerData.bullet_frequency * 1.5;
+    game_facade.game.player.stats.Health_Regen = playerData.health_regen * 0.01;
+    game_facade.game.player.stats.Bullet_Speed = 9 + playerData.bullet_speed * 1.0;
+
     upgradeHTML.remove();
   };
 }
