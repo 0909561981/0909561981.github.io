@@ -52,6 +52,6 @@ class Bullet {
     // 展示Bullet的圖案跟血量
     display() {
         fill(this.type === "player" ? "yellow" : "red");
-        ellipse(this.pos.x, this.pos.y, 10);
+        ellipse(this.pos.x, this.pos.y, game_facade.game.width * 0.01);  // ellipse(this.pos.x, this.pos.y, 10);
     }
 }

@@ -53,7 +53,7 @@ class Enemy {
     }
     // 展示Enemy的圖案跟血量
     display() {
-        textSize(32);
+        textSize(game_facade.game.width * 0.04);  // textSize(32);
         text(this.emoji, this.pos.x, this.pos.y);
         stroke(255);
         fill(100);

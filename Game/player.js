@@ -44,7 +44,8 @@ class Player {
     }
     // 展示Player的圖案跟血量
     display() {
-        textSize(32);
+        //textSize(32);
+        textSize(game_facade.game.width * 0.04);
         text("😄", this.pos.x, this.pos.y);
         stroke(255);
         fill(100);
