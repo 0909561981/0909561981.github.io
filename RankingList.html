@@ -37,8 +37,9 @@
     }
 
     .back-button {
-      display: block;
-      margin: 30px auto 0;
+      position: absolute; /* 加這行：讓按鈕可以被定位 */
+      top: 20px;           /* 離上方 20px */
+      left: 20px;          /* 離左側 20px */
       padding: 10px 20px;
       font-size: 16px;
       background-color: #444;
@@ -47,6 +48,7 @@
       border-radius: 10px;
       cursor: pointer;
       transition: background-color 0.2s;
+      z-index: 1000; /* 保證在最上層，不被遊戲畫面蓋住 */
     }
 
     .back-button:hover {
