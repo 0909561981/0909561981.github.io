@@ -55,7 +55,7 @@ class Boss {
     }
     // 展示Boss的圖案跟血量
     display() {
-        textSize(game_facade.game.width * 0.04);  // textSize(32);
+        textSize(32);
         text(this.emoji, this.pos.x, this.pos.y);
         stroke(255);
         fill(100);

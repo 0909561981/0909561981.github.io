@@ -26,9 +26,9 @@ class Map {
         // 建立井跟敵人         -- well
         this.tiles.push(new Tile(this.width / 8, this.width / 8, TileType.WELL, 0));
         this.tiles.push(new Tile(this.width - this.width / 8, this.width / 8, TileType.WELL, 1));
-        this.tiles.push(new Tile(this.width / 8, this.height - this.width / 8, TileType.WELL, 2));
-        this.tiles.push(new Tile(this.width - this.width / 8, this.height - this.width / 8, TileType.WELL, 3));
-        this.tiles.push(new Tile(this.width / 2, this.height  / 4, TileType.WELL, 4));
+        this.tiles.push(new Tile(this.width / 8, this.height - this.width / 4, TileType.WELL, 2));
+        this.tiles.push(new Tile(this.width - this.width / 8, this.height - this.width / 4, TileType.WELL, 3));
+        this.tiles.push(new Tile(this.width / 2, this.height / 4, TileType.WELL, 4));
     }
 
     // 判斷下一步是否能走                                  註記：game.js的ollidesWithObstacle()    Player.js的move()

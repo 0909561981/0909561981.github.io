@@ -15,7 +15,7 @@ class Game {
         // 建立畫布(讓畫面適配瀏覽器)                       註記：game_facade可以使用全螢幕按鈕才呼叫
         createCanvas(windowWidth, windowHeight);
         textAlign(CENTER, CENTER);
-        console.log(this.width, this.height);
+
         // 建立滑輪
         moveJoystick = new Joystick(100, this.map.height - 100);
         shootJoystick = new Joystick(this.map.width - 100, this.map.height - 100);

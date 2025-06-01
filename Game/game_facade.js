@@ -31,11 +31,11 @@ class Game_Facade {
         // 畫障礙物款式
         this.game.map.tiles.forEach(ob => {
             push();
-            textSize(game_facade.game.width * 0.043);  // textSize(48);
+            textSize(48);
             if (ob.type === TileType.WELL) {
                 text("🗑", ob.pos.x, ob.pos.y);
                 fill(255);
-                textSize(game_facade.game.width * 0.02);  // textSize(12);
+                textSize(12);
                 text("Lv " + ob.lv, ob.pos.x, ob.pos.y + 30);
             }
             else if (ob.type === TileType.WALL) {  
