@@ -4,8 +4,8 @@ class Stats {
         if(type === "enemy") {
             this.Max_Health = 0.5 + Max_Health / 5;
             this.Movement_Speed = 0.5 + Movement_Speed * 1;
-            this.Bullet_Damage = 0.5 + Bullet_Damage * 1;
-            this.Body_Damage = 0.5 + Body_Damage * 1;
+            this.Bullet_Damage = 0.5 + Bullet_Damage * 0.1;
+            this.Body_Damage = 0.5 + Body_Damage * 0.1;
             this.Bullet_Frequency = 180 - Bullet_Frequency * 1;
             this.Health_Regen = 0.5 + Health_Regen * 1; // 沒有此功能
             this.Bullet_Speed = 0.5 + Bullet_Speed * 1;
@@ -13,8 +13,8 @@ class Stats {
         else if (type === "boss") {
             this.Max_Health = 1.5 + Max_Health / 5;
             this.Movement_Speed = 1.0 + Movement_Speed * 1;
-            this.Bullet_Damage = 0.5 + Bullet_Damage * 1;
-            this.Body_Damage = 0.5 + Body_Damage * 1;
+            this.Bullet_Damage = 0.5 + Bullet_Damage * 0.2;
+            this.Body_Damage = 0.5 + Body_Damage * 0.2;
             this.Bullet_Frequency = 180 - Bullet_Frequency * 1.5;
             this.Health_Regen = 0.5 + Health_Regen * 1; // 沒有此功能
             this.Bullet_Speed = 0.5 + Bullet_Speed * 1;

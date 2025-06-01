@@ -52,7 +52,7 @@ async function showUpgradeScreen() {
   if(game_facade.game.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv > playerStats.ranking_lv)    playerStats.ranking_lv = game_facade.game.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv;
 
   // 使用後端回傳的升級點數
-  let upgradePoints = 7-(playerStats.max_health+playerStats.movement_speed+playerStats.bullet_damage+playerStats.body_damage+playerStats.bullet_frequency+playerStats.health_regen+playerStats.bullet_speed)+ (int)(playerStats.ranking_lv / 5) + 1;
+  let upgradePoints = 7-(playerStats.max_health+playerStats.movement_speed+playerStats.bullet_damage+playerStats.body_damage+playerStats.bullet_frequency+playerStats.health_regen+playerStats.bullet_speed)+ (int)(playerStats.ranking_lv) + 1;
   if(upgradePoints<0)
     upgradePoints=0;
   // 初始化等級從後端數值四捨五入
