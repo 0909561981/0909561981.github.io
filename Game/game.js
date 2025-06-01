@@ -118,15 +118,20 @@ class Game {
 
             let saveButton = createButton('儲存進度');
             // saveButton.mousePressed(() => alert('儲存進度尚未實作'));
-            saveButton.mousePressed(() => this.saveProgress());
+            saveButton.mousePressed(async () => {
+                await this.saveProgress(true);
+                const account = getAccount();
+                location.href = `home.html?account=${encodeURIComponent(account)}`;
+            });
             saveButton.style('padding', '15px 30px');
             saveButton.style('font-size', '18px');
             bottomButtonDiv.child(saveButton);
 
             let exitButton = createButton('離開遊戲');
-            exitButton.mousePressed(() => {
-            const account = getAccount();
-            location.href = `home.html?account=${encodeURIComponent(account)}`;
+            exitButton.mousePressed(async () => {
+                await this.saveProgress(false);
+                const account = getAccount();
+                location.href = `home.html?account=${encodeURIComponent(account)}`;
             });
             exitButton.style('padding', '15px 30px');
             exitButton.style('font-size', '18px');
@@ -155,7 +160,7 @@ class Game {
             const account = getAccount();
             console.log( this.map.tiles.filter(t => t.type === TileType.WELL).find(t => t.index === 0).lv);
             await this.saveRecord1(account, this.map.tiles.filter(t => t.type === TileType.WELL).find(t => t.index === 0).lv);
-            await this.saveProgress();
+            await this.saveProgress(false);
             
             window.location.href = `home.html?account=${encodeURIComponent(account)}`;
         });
@@ -176,7 +181,7 @@ class Game {
     }
 
     // 暫時儲存紀錄
-    async saveProgress() {
+    async saveProgress(flag) {
         const account = getAccount();
         if (!account) {
             alert("尚未登入，請重新登入");
@@ -184,7 +189,7 @@ class Game {
             return;
         }
 
-        if(this.player.hp<=0) {
+        if(this.player.hp<=0 || !flag) {
             this.map.tiles.find(t => t.type === TileType.WELL && t.index === 0).lv = 1;
             this.player.stats.Max_Health = 3;
             this.player.stats.Movement_Speed = 7.5;
@@ -209,11 +214,12 @@ class Game {
             });
 
             if (response.error)     alert(`儲存失敗：${response.error}`);
-            else if(this.player.hp>0)   alert("進度已成功儲存！");
+            else if(this.player.hp>0 && flag)   alert("進度已成功儲存！");
         }
         catch (error) {
-            alert("儲存時發生錯誤");
             console.error(error);
+            alert("儲存時發生錯誤");
+            
         }
     }
 }
