@@ -7,15 +7,15 @@ const TileType = Object.freeze({
 });
 
 // Enumeration(沒用到)
-const ActionType = Object.freeze({
-    MOVE: 'MOVE',
-    ATTACK: 'ATTACK',
-    IDLE: 'IDLE'
-});
+// const ActionType = Object.freeze({
+//     MOVE: 'MOVE',
+//     ATTACK: 'ATTACK',
+//     IDLE: 'IDLE'
+// });
 
 // Enumeration(沒用到)
-const RoleType = Object.freeze({
-    PLAYER: 'player',
-    ENEMY: 'enemy',
-    BOSS: 'boss'
-});
+// const RoleType = Object.freeze({
+//     PLAYER: 'player',
+//     ENEMY: 'enemy',
+//     BOSS: 'boss'
+// });

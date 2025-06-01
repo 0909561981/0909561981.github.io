@@ -28,20 +28,22 @@ function getAccount() {
 
 // 前端跟後端拿資料
 async function fetchPlayerInfo(account) {
-  try {
-    const data = await ApiService.postToBackend('/get_player_info', { account });
+    try {
+        const data = await ApiService.postToBackend('/get_player_info', { account });
 
-    if (data && data.success) {
-      console.log('✅ 玩家資料取得成功：', data);
-      return data;
-    } else {
-      console.warn('⚠️ 找不到該玩家資訊：', data);
-      return undefined;
+        if (data && data.success) {
+            console.log('✅ 玩家資料取得成功：', data);
+            return data;
+        } 
+        else {
+            console.warn('⚠️ 找不到該玩家資訊：', data);        
+            return undefined;
+        }
+    } 
+    catch (error) {
+        console.error('🚨 請求玩家資訊時發生錯誤：', error);
+        return undefined;
     }
-  } catch (error) {
-    console.error('🚨 請求玩家資訊時發生錯誤：', error);
-    return undefined;
-  }
 }
 
 // 前端跟後端拿資料 
@@ -77,22 +79,4 @@ function draw() {
     
     // draw()
     game_facade.draw();
-}
-
-// 處理放大縮小問題
-window.onload = () => {
-  document.addEventListener('touchstart', (event) => {
-    if (event.touches.length > 1) {
-       event.preventDefault();
-    }
-  });
-  
-  let lastTouchEnd = 0;
-  document.addEventListener('touchend', (event) => {
-    const now = (new Date()).getTime();
-    if (now - lastTouchEnd <= 300) {
-      event.preventDefault();
-    }
-    lastTouchEnd = now;
-  }, false);
 }

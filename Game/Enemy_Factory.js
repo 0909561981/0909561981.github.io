@@ -1,5 +1,4 @@
 class Enemy_Factory {
-
     // 初始生成怪物
     create_enemy(num_enemy, num_boss) {
         game_facade.game.map.tiles.forEach((w, i) => {
@@ -43,20 +42,20 @@ class Enemy_Factory {
     }
 
     // 印出當前剩餘怪物              註記：debug用
-    print_enemy() {
-        game_facade.game.map.tiles.forEach((well, index) => {
-            if(well.type === TileType.WELL)    {
-                const enemyIcons = well.queue.map(type => {
-                if (type === "enemy") {
-                    return well.enemyEmoji || "👾"; // 預設敵人emoji
-                } else if (type === "boss") {
-                    return well.bossEmoji || "👹";  // 預設boss emoji
-                }
-                return "?";
-                }).join(" ");
+    // print_enemy() {
+    //     game_facade.game.map.tiles.forEach((well, index) => {
+    //         if(well.type === TileType.WELL)    {
+    //             const enemyIcons = well.queue.map(type => {
+    //             if (type === "enemy") {
+    //                 return well.enemyEmoji || "👾"; // 預設敵人emoji
+    //             } else if (type === "boss") {
+    //                 return well.bossEmoji || "👹";  // 預設boss emoji
+    //             }
+    //             return "?";
+    //             }).join(" ");
 
-                console.log(`${well.emoji || "🕳️"} 井 ${well.index} (Lv${well.lv}) 剩下: ${enemyIcons}`);
-                }
-        });
-    }
+    //             console.log(`${well.emoji || "🕳️"} 井 ${well.index} (Lv${well.lv}) 剩下: ${enemyIcons}`);
+    //             }
+    //     });
+    // }
 }
