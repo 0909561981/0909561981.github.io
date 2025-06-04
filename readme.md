@@ -1,6 +1,7 @@
 # Endless Shooter 遊戲專案說明
 
 ## 專案結構
+```plaintext
 Project Root/                      # 專案根目錄，所有檔案與資料夾的起點
 ├── Game/                         # 遊戲核心程式碼資料夾
 │   ├── boss.js                  # BOSS 敵人邏輯，繼承自 Enemy 類別，處理BOSS特殊行為
@@ -20,20 +21,19 @@ Project Root/                      # 專案根目錄，所有檔案與資料夾�
 ├── Login.html                   # 玩家登入頁面，帳號驗證介面
 ├── RankingList.html             # 排行榜頁面，顯示玩家分數與排名
 ├── Register.html                # 玩家註冊頁面，新增玩家帳號
-├── Stanly.png                  # 遊戲角色或重要圖示的圖片素材
-├── Upgrade.js                  # 升級系統腳本，負責能力提升及等級管理
+├── Stanly.png                   # 遊戲角色或重要圖示的圖片素材
+├── Upgrade.js                   # 升級系統腳本，負責能力提升及等級管理
 ├── Upgrade.mp3                  # 升級音效檔，播放升級提示音效
-├── about.js                    # 遊戲關於頁面相關腳本與說明
-├── api.js                      # 前後端 API 介面連接與請求處理
-├── bgm.mp3                     # 遊戲背景音樂檔，營造遊戲氣氛
-├── common.js                   # 公用函式庫，封裝多種共用工具函數
-├── history.html                # 玩家歷史紀錄頁面，展示遊戲數據紀錄
-├── home.html                   # 遊戲主選單或首頁入口
-├── information.html            # 遊戲說明與資訊頁面
-├── index.html                  # 網站首頁，導向其他功能頁面
-├── p5.js                       # p5.js 函式庫，負責繪圖與動畫效果支援
-└── style.css                   # 全站共用 CSS 樣式表，控制網頁視覺風格
-
+├── about.js                     # 遊戲關於頁面相關腳本與說明
+├── api.js                       # 前後端 API 介面連接與請求處理
+├── bgm.mp3                      # 遊戲背景音樂檔，營造遊戲氣氛
+├── common.js                    # 公用函式庫，封裝多種共用工具函數
+├── history.html                 # 玩家歷史紀錄頁面，展示遊戲數據紀錄
+├── home.html                    # 遊戲主選單或首頁入口
+├── information.html             # 遊戲說明與資訊頁面
+├── index.html                   # 網站首頁，導向其他功能頁面
+├── p5.js                        # p5.js 函式庫，負責繪圖與動畫效果支援
+└── style.css                    # 全站共用 CSS 樣式表，控制網頁視覺風格
 
 ---
 
