@@ -1,0 +1,35 @@
+source C:\Users\USER\Documents\GitHub\Endless_Shooter\test\init.sql
+
+select * from users;
+select * from player_information;
+select * from ranking_list;
+select * from player_record;
+
+清空表格
+DELETE FROM users WHERE account = 'aaaaa';
+
+SET FOREIGN_KEY_CHECKS=0;
+DROP TABLE IF EXISTS player_information;
+DROP TABLE IF EXISTS ranking_list;
+DROP TABLE IF EXISTS player_record;
+DROP TABLE IF EXISTS users;
+ALTER TABLE users AUTO_INCREMENT = 1;
+SET FOREIGN_KEY_CHECKS=1;
+
+INSERT INTO users (account, password) VALUES ("Stanly", "123");
+INSERT INTO users (account, password) VALUES ("Stanlily", "123");
+INSERT INTO users (account, password) VALUES ("Bad", "123");
+UPDATE player_record SET record1 = 87 WHERE user_id = 1;
+UPDATE player_record SET record1 = 28 WHERE user_id = 2;
+UPDATE player_record SET record1 = 10 WHERE user_id = 3;
+
+UPDATE player_information SET max_health = 1 WHERE user_id = 5;
+UPDATE player_information SET movement_speed = 1 WHERE user_id = 5;
+UPDATE player_information SET bullet_frequency = 1 WHERE user_id = 5;
+UPDATE player_information SET health_regen = 1 WHERE user_id = 5;
+UPDATE player_information SET bullet_speed = 1 WHERE user_id = 5;
+UPDATE player_information SET max_health = 1 WHERE user_id = 7;
+
+排行榜排序按照lv順序
+SELECT u.account, r.lv FROM ranking_list r JOIN users u ON r.user_id = u.id ORDER BY r.lv DESC;
+
